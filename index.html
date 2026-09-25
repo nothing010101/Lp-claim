@@ -85,7 +85,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const boot=document.getElementById("boot"); if(boot) boot.remove();
   const RPCS=["https://mainnet.base.org","https://base-rpc.publicnode.com","https://base.drpc.org","https://1rpc.io/base","https://base.llamarpc.com"];
   const BASE_ID=8453;
-  const LOCK=0x72415Ec67374cc09bC5dE621b052300016cEcf60;
+  const LOCK="0x72415Ec67374cc09bC5dE621b052300016cEcf60";
   const LOCK_ABI=["function withdraw(address token)"];
   const ERC20_ABI=["function symbol() view returns (string)","function decimals() view returns (uint8)","function balanceOf(address) view returns (uint256)"];
   let provider=null,signer=null,account=null;
