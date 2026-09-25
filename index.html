@@ -3,57 +3,58 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>LP Fee Claimer — LpLocker (Base)</title>
+<title>Lock Claimer — CARLOS (Base)</title>
 <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.4/dist/ethers.umd.min.js"></script>
+<script>if(!window.ethers){document.write('<script src="https://unpkg.com/ethers@6.13.4/dist/ethers.umd.min.js"><\/script>');}</script>
 <style>
-  :root{--bg:#0b0f14;--card:#131a22;--card2:#0f1620;--line:#22303f;--txt:#e7eef7;--mut:#8fa3b8;--base:#0052ff;--ok:#28c76f;--warn:#ffb020;--err:#ff5c5c}
+  :root{--card:#131a22;--line:#22303f;--txt:#e7eef7;--mut:#8fa3b8;--base:#0052ff;--ok:#28c76f;--warn:#ffb020;--err:#ff5c5c}
   *{box-sizing:border-box}
   body{margin:0;background:linear-gradient(180deg,#070b10,#0b0f14 40%);color:var(--txt);font:15px/1.55 ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial}
-  .wrap{max-width:860px;margin:0 auto;padding:28px 18px 60px}
+  .wrap{max-width:820px;margin:0 auto;padding:28px 18px 60px}
   h1{font-size:22px;margin:0 0 4px}
   .sub{color:var(--mut);font-size:13.5px;margin-bottom:20px}
-  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:16px;box-shadow:0 6px 24px rgba(0,0,0,.25)}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:16px}
   .card h2{font-size:14px;text-transform:uppercase;letter-spacing:.08em;color:var(--mut);margin:0 0 12px}
   .row{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px dashed #1e2a37}
   .row:last-child{border-bottom:none}
   .k{color:var(--mut)}
   .v{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13.5px;text-align:right;word-break:break-all}
-  .btn{appearance:none;border:none;border-radius:10px;padding:12px 16px;font-weight:700;font-size:14.5px;cursor:pointer;transition:.15s}
+  .btn{appearance:none;border:none;border-radius:10px;padding:12px 16px;font-weight:700;font-size:14.5px;cursor:pointer}
   .btn:disabled{opacity:.45;cursor:not-allowed}
   .btn-primary{background:var(--base);color:#fff}
-  .btn-primary:hover:not(:disabled){filter:brightness(1.12)}
   .btn-ghost{background:#1b2531;color:var(--txt);border:1px solid var(--line)}
-  .btn-ghost:hover:not(:disabled){background:#202c3a}
   .actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:8px}
   .badge{display:inline-block;padding:3px 9px;border-radius:999px;font-size:12px;font-weight:700}
   .b-ok{background:rgba(40,199,111,.14);color:var(--ok);border:1px solid rgba(40,199,111,.35)}
   .b-warn{background:rgba(255,176,32,.13);color:var(--warn);border:1px solid rgba(255,176,32,.35)}
   .b-err{background:rgba(255,92,92,.13);color:var(--err);border:1px solid rgba(255,92,92,.35)}
-  .amt{font-size:26px;font-weight:800;letter-spacing:-.02em}
-  .amt small{font-size:14px;color:var(--mut);font-weight:600}
-  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-  @media(max-width:560px){.grid2{grid-template-columns:1fr}}
+  .amt{font-size:26px;font-weight:800}
+  .amt small{font-size:14px;color:var(--mut)}
   .note{font-size:13px;color:var(--mut)}
-  .warnbox{background:rgba(255,176,32,.08);border:1px solid rgba(255,176,32,.3);border-radius:10px;padding:12px;font-size:13.5px;color:#ffd489}
-  .errbox{background:rgba(255,92,92,.08);border:1px solid rgba(255,92,92,.3);border-radius:10px;padding:12px;font-size:13.5px;color:#ffb3b3;margin-top:10px;white-space:pre-wrap}
+  .warnbox{background:rgba(255,176,32,.08);border:1px solid rgba(255,176,32,.3);border-radius:10px;padding:12px;font-size:13.5px;color:#ffd489;margin-top:10px}
+  .errbox{background:rgba(255,92,92,.08);border:1px solid rgba(255,92,92,.3);border-radius:10px;padding:12px;font-size:13px;color:#ffb3b3;margin-top:10px;white-space:pre-wrap;font-family:ui-monospace,monospace}
   .okbox{background:rgba(40,199,111,.08);border:1px solid rgba(40,199,111,.3);border-radius:10px;padding:12px;font-size:13.5px;color:#a9f0c9;margin-top:10px;white-space:pre-wrap}
   input{width:100%;background:#0c1219;border:1px solid var(--line);color:var(--txt);border-radius:9px;padding:10px 12px;font-family:ui-monospace,monospace;font-size:13px}
   label{display:block;color:var(--mut);font-size:12.5px;margin:10px 0 5px}
-  a{color:#7fb2ff}
   code{background:#0c1219;border:1px solid var(--line);border-radius:6px;padding:1px 6px;font-size:12.5px}
+  #boot{position:fixed;inset:0;background:#070b10;display:flex;align-items:center;justify-content:center;z-index:99;color:var(--mut);font-size:14px}
 </style>
 </head>
 <body>
+<div id="boot">memuat…</div>
 <div class="wrap">
-  <h1>LP Fee Claimer — KEKAINE / WETH</h1>
-  <div class="sub">Klaim trading fee Uniswap V3 dari kontrak locker tanpa website launchpad. Kontrak: <code>0x5BaB…Eb7</code> · Chain: Base</div>
+  <h1>Lock Claimer — CLAIM TOKEN TERKUNCI</h1>
+  <div class="sub">Menarik token hasil pembelian awal yang terkunci di kontrak launchpad. Kontrak lock: <code>0x7241…Ecf60</code> · Base</div>
+
+  <div class="card">
+    <h2>Status</h2>
+    <div id="status" class="note">mulai…</div>
+  </div>
 
   <div class="card">
     <h2>1 · Wallet</h2>
     <div class="row"><span class="k">Wallet terhubung</span><span class="v" id="acct">—</span></div>
     <div class="row"><span class="k">Jaringan</span><span class="v" id="chain">—</span></div>
-    <div class="row"><span class="k">Owner kontrak (beneficiary)</span><span class="v" id="owner">memuat…</span></div>
-    <div class="row"><span class="k">Status akses klaim</span><span class="v" id="access">—</span></div>
     <div class="actions">
       <button class="btn btn-primary" id="connect">Hubungkan Wallet</button>
       <button class="btn btn-ghost" id="switch">Pindah ke Base</button>
@@ -62,197 +63,91 @@
   </div>
 
   <div class="card">
-    <h2>2 · Fee yang bisa diklaim sekarang</h2>
-    <div class="grid2">
-      <div>
-        <div class="note">KEKAINE (gross)</div>
-        <div class="amt" id="kek">—</div>
-      </div>
-      <div>
-        <div class="note">WETH (gross)</div>
-        <div class="amt" id="weth">—</div>
-      </div>
-    </div>
-    <div class="note" style="margin-top:12px">
-      Setelah potongan protokol launchpad <b id="feepct">—</b>, estimasi yang Anda terima:
-      <b id="net">—</b>. <span id="usd" class="note"></span>
-    </div>
-    <div class="actions">
-      <button class="btn btn-ghost" id="refresh">Refresh estimasi</button>
-    </div>
+    <h2>2 · Token terkunci di kontrak</h2>
+    <label>Alamat token</label>
+    <input id="token" value="0x7cb19d771c1189FaBe175187c072E67aB9503dA7" />
+    <div class="row"><span class="k">Saldo terkunci di kontrak</span><span class="v" id="locked">—</span></div>
+    <div class="actions"><button class="btn btn-ghost" id="refresh">Refresh</button></div>
   </div>
 
   <div class="card">
     <h2>3 · Klaim</h2>
-    <label>Recipient (alamat penerima fee)</label>
-    <input id="recipient" placeholder="0x…" />
-    <label>Token ID posisi Uniswap V3</label>
-    <input id="tokenId" value="1420764" />
-    <div class="actions">
-      <button class="btn btn-primary" id="claim" disabled>Klaim Fee</button>
-    </div>
+    <div class="actions"><button class="btn btn-primary" id="claim" disabled>Withdraw Token</button></div>
     <div id="claimMsg"></div>
-  </div>
-
-  <div class="card">
-    <h2>4 · Info lock</h2>
-    <div class="row"><span class="k">Versi LpLocker</span><span class="v" id="ver">—</span></div>
-    <div class="row"><span class="k">Sisa waktu vesting</span><span class="v" id="vest">—</span></div>
-    <div class="row"><span class="k">Fee protokol</span><span class="v" id="fee">—</span></div>
-    <div class="row"><span class="k">Fee recipient protokol</span><span class="v" id="feerec">—</span></div>
-    <div class="note" style="margin-top:10px">LP NFT terkunci dengan durasi ~1.054 tahun, sehingga <code>release()</code> (menarik kembali posisi LP) praktis tidak bisa dilakukan sekarang.</div>
-  </div>
-
-  <div class="card">
-    <h2>Catatan</h2>
-    <div class="note">
-      • Fungsi yang dipakai: <code>collectFees(address recipient, uint256 tokenId)</code> — hanya bisa dipanggil oleh owner kontrak.<br>
-      • Fee dikirim langsung ke <code>recipient</code> (default: wallet Anda). Potongan protokol otomatis ke fee-recipient launchpad.<br>
-      • dApp ini tidak menyimpan private key Anda; semua transaksi ditandatangani di wallet Anda sendiri.
+    <div class="note" style="margin-top:10px">
+      Fungsi: <code>withdraw(address token)</code>. Hanya pemilik lock (wallet yang membeli saat launch) yang boleh memanggil.
     </div>
   </div>
 </div>
 
 <script>
-const RPC="https://mainnet.base.org";
-const BASE_ID=8453;
-const LOCKER="0x5BaBBf3d0832dc6A1A8cAd343dD8632Fd0796Eb7";
-const PM="0x03a520b32C04BF3bEEf7BEb72E919cf822Ed34f1";
-const TOKEN0="0x3c8b1354bd27bb5c9bd07b7e568cf9212168d92e"; // KEKAINE
-const TOKEN1="0x4200000000000000000000000000000000000006"; // WETH
+document.addEventListener("DOMContentLoaded", () => {
+  const boot=document.getElementById("boot"); if(boot) boot.remove();
+  const RPCS=["https://mainnet.base.org","https://base-rpc.publicnode.com","https://base.drpc.org","https://1rpc.io/base","https://base.llamarpc.com"];
+  const BASE_ID=8453;
+  const LOCK=0x72415Ec67374cc09bC5dE621b052300016cEcf60;
+  const LOCK_ABI=["function withdraw(address token)"];
+  const ERC20_ABI=["function symbol() view returns (string)","function decimals() view returns (uint8)","function balanceOf(address) view returns (uint256)"];
+  let provider=null,signer=null,account=null;
+  const $=id=>document.getElementById(id);
+  const fmt=(x,d)=>{try{return Number(ethers.formatUnits(x,d)).toLocaleString("id-ID",{maximumFractionDigits:4});}catch(e){return "—";}};
+  const setStatus=(h,c)=>{$("status").innerHTML=(c?'<span class="badge '+c+'">'+(c==="b-ok"?"ok":c==="b-warn"?"info":"error")+'</span> ':'')+h;};
 
-const LOCKER_ABI=[
-  "function owner() view returns (address)",
-  "function collectFees(address _recipient, uint256 _tokenId)",
-  "function collectAllFees(uint256 _tokenId)",
-  "function release()",
-  "function vestingSchedule() view returns (uint256)",
-  "function version() view returns (string)",
-  "function _fee() view returns (uint256)",
-  "function _feeRecipient() view returns (address)",
-  "function duration() view returns (uint256)"
-];
-const PM_ABI=[
-  "function collect((uint256 tokenId,address recipient,uint128 amount0Max,uint128 amount1Max) params) returns (uint256 amount0,uint256 amount1)"
-];
-const ERC20_ABI=["function symbol() view returns (string)","function decimals() view returns (uint8)"];
-
-let provider=new ethers.JsonRpcProvider(RPC);
-let signer=null, account=null, ownerAddr=null, feePct=0, dec0=18, dec1=18, sym0="TOKEN0", sym1="TOKEN1";
-const $=id=>document.getElementById(id);
-const MAX128=(1n<<128n)-1n;
-
-function short(a){return a?a.slice(0,6)+"…"+a.slice(-4):"—";}
-function fmt(x,d){try{return Number(ethers.formatUnits(x,d)).toLocaleString("id-ID",{maximumFractionDigits:6});}catch(e){return "—";}}
-
-async function readCore(){
-  const locker=new ethers.Contract(LOCKER,LOCKER_ABI,provider);
-  const [o,v,vest,fee,feeRec,dur]=await Promise.all([
-    locker.owner(),locker.version(),locker.vestingSchedule(),locker._fee(),locker._feeRecipient(),locker.duration()
-  ]);
-  ownerAddr=o;
-  $("owner").textContent=o;
-  $("ver").textContent=v;
-  feePct=Number(fee)/100*100; // _fee/100 = fraksi
-  $("fee").textContent=Number(fee)+"% (÷100)";
-  $("feerec").textContent=feeRec;
-  $("feepct").textContent=(feePct)+"%";
-  const yrs=(Number(vest)/31557600);
-  $("vest").textContent = Number(vest)===0 ? "selesai" : "~"+yrs.toLocaleString("id-ID",{maximumFractionDigits:0})+" tahun";
-}
-async function readTokens(){
-  try{
-    const c0=new ethers.Contract(TOKEN0,ERC20_ABI,provider), c1=new ethers.Contract(TOKEN1,ERC20_ABI,provider);
-    const [s0,d0,s1,d1]=await Promise.all([c0.symbol(),c0.decimals(),c1.symbol(),c1.decimals()]);
-    sym0=s0;dec0=Number(d0);sym1=s1;dec1=Number(d1);
-    document.querySelectorAll("h1")[0].textContent="LP Fee Claimer — "+sym0+" / "+sym1;
-  }catch(e){}
-}
-async function readClaimable(){
-  try{
-    const pm=new ethers.Contract(PM,PM_ABI,provider);
-    const data=pm.interface.encodeFunctionData("collect",[{tokenId:BigInt($("tokenId").value||1420764),recipient:LOCKER,amount0Max:MAX128,amount1Max:MAX128}]);
-    const res=await provider.call({from:LOCKER,to:PM,data});
-    const [a0,a1]=pm.interface.decodeFunctionResult("collect",res);
-    $("kek").innerHTML=fmt(a0,dec0)+' <small>'+sym0+'</small>';
-    $("weth").innerHTML=fmt(a1,dec1)+' <small>'+sym1+'</small>';
-    const net0=a0*(10000n-BigInt(Math.round(feePct*100)))/10000n;
-    const net1=a1*(10000n-BigInt(Math.round(feePct*100)))/10000n;
-    $("net").textContent=fmt(net0,dec0)+" "+sym0+"  +  "+fmt(net1,dec1)+" "+sym1;
-    fetchUsd(a0,a1);
-  }catch(e){
-    $("kek").textContent="—";$("weth").textContent="—";
-    console.error(e);
+  async function pickProvider(){
+    if(!window.ethers) throw new Error("ethers.js gagal dimuat (CDN diblokir).");
+    for(const u of RPCS){ try{ const p=new ethers.JsonRpcProvider(u); await p.getBlockNumber(); setStatus("RPC: "+u,"b-ok"); return p; }catch(e){} }
+    throw new Error("Semua RPC gagal.");
   }
-}
-async function fetchUsd(a0,a1){
-  try{
-    const r=await fetch("https://api.geckoterminal.com/api/v2/networks/base/pools/0x96f40dc1565241731b15c53de8d4c8c25539fd70");
-    const j=await r.json();const at=j.data.attributes;
-    const p0=Number(at.base_token_price_usd),p1=Number(at.quote_token_price_usd);
-    const u0=Number(ethers.formatUnits(a0,dec0))*p0, u1=Number(ethers.formatUnits(a1,dec1))*p1;
-    $("usd").textContent="(≈ $"+ (u0+u1).toFixed(4) +" gross)";
-  }catch(e){}
-}
-function renderAccess(){
-  const el=$("access");
-  if(!account){el.innerHTML='<span class="badge b-warn">hubungkan wallet</span>';$("claim").disabled=true;return;}
-  if(ownerAddr && account.toLowerCase()===ownerAddr.toLowerCase()){
-    el.innerHTML='<span class="badge b-ok">owner ✓ boleh klaim</span>';$("claim").disabled=false;
-  }else{
-    el.innerHTML='<span class="badge b-err">bukan owner — tidak bisa klaim</span>';
-    $("claim").disabled=true;
-    $("walletMsg").innerHTML='<div class="warnbox">Wallet ini bukan owner kontrak. Klaim fee hanya bisa dilakukan oleh owner <b>'+ownerAddr+'</b>. Hubungkan wallet owner tersebut.</div>';
+  async function readLocked(){
+    try{
+      const tk=$("token").value.trim();
+      if(!ethers.isAddress(tk)) return;
+      const c=new ethers.Contract(tk,ERC20_ABI,provider);
+      const [sym,dec,bal]=await Promise.all([c.symbol(),c.decimals(),c.balanceOf(LOCK)]);
+      $("locked").textContent=fmt(bal,dec)+" "+sym;
+    }catch(e){ $("locked").textContent="—"; }
   }
-}
-async function connect(){
-  try{
-    if(!window.ethereum)return alert("MetaMask / wallet EVM tidak terdeteksi. Buka di browser desktop dengan ekstensi wallet.");
-    const p=new ethers.BrowserProvider(window.ethereum);
-    await p.send("eth_requestAccounts",[]);
-    signer=await p.getSigner();account=await signer.getAddress();provider=p;
-    const net=await p.getNetwork();
-    $("acct").textContent=account;
-    $("chain").textContent=net.name+" ("+net.chainId.toString()+")";
-    $("recipient").value=account;
-    if(Number(net.chainId)!==BASE_ID){$("chain").innerHTML='<span class="badge b-warn">bukan Base</span>';}
-    await readCore();readClaimable();renderAccess();
-  }catch(e){$("walletMsg").innerHTML='<div class="errbox">'+e.message+'</div>';}
-}
-async function switchNet(){
-  try{
-    await window.ethereum.request({method:"wallet_switchEthereumChain",params:[{chainId:"0x2105"}]});
-    await connect();
-  }catch(e){
-    if(e.code===4902){
-      await window.ethereum.request({method:"wallet_addEthereumChain",params:[{chainId:"0x2105",chainName:"Base",nativeCurrency:{name:"ETH",symbol:"ETH",decimals:18},rpcUrls:[RPC],blockExplorerUrls:["https://basescan.org"]}]});
+  async function connect(){
+    try{
+      $("walletMsg").innerHTML="";
+      if(!window.ethereum) throw new Error("Wallet EVM tidak terdeteksi. Buka di tab browser desktop dengan MetaMask, bukan di preview/iframe.");
+      const p=new ethers.BrowserProvider(window.ethereum);
+      await p.send("eth_requestAccounts",[]);
+      signer=await p.getSigner(); account=await signer.getAddress(); provider=p;
+      const net=await p.getNetwork();
+      $("acct").textContent=account;
+      $("chain").textContent=net.name+" ("+net.chainId.toString()+")";
+      $("claim").disabled=false;
+      if(Number(net.chainId)!==BASE_ID){ $("chain").innerHTML='<span class="badge b-warn">bukan Base</span>'; $("claim").disabled=true; }
+      await readLocked();
+      setStatus("Wallet terhubung.","b-ok");
+    }catch(e){ $("walletMsg").innerHTML='<div class="errbox">'+(e.shortMessage||e.message)+'</div>'; }
+  }
+  async function switchNet(){
+    try{
+      if(!window.ethereum) throw new Error("Wallet tidak terdeteksi.");
+      try{ await window.ethereum.request({method:"wallet_switchEthereumChain",params:[{chainId:"0x2105"}]}); }
+      catch(e){ if(e.code===4902) await window.ethereum.request({method:"wallet_addEthereumChain",params:[{chainId:"0x2105",chainName:"Base",nativeCurrency:{name:"ETH",symbol:"ETH",decimals:18},rpcUrls:["https://mainnet.base.org"],blockExplorerUrls:["https://basescan.org"]}]}); else throw e; }
       await connect();
-    } else $("walletMsg").innerHTML='<div class="errbox">'+e.message+'</div>';
+    }catch(e){ $("walletMsg").innerHTML='<div class="errbox">'+(e.shortMessage||e.message)+'</div>'; }
   }
-}
-async function claim(){
-  try{
-    $("claimMsg").innerHTML='';
-    if(!signer)return connect();
-    const rec=$("recipient").value.trim();
-    if(!ethers.isAddress(rec))throw new Error("Recipient bukan alamat valid.");
-    const locker=new ethers.Contract(LOCKER,LOCKER_ABI,signer);
-    const tid=BigInt($("tokenId").value);
-    const tx=await locker.collectFees(rec,tid);
-    $("claimMsg").innerHTML='<div class="okbox">Transaksi terkirim:\n'+tx.hash+'\nMenunggu konfirmasi…</div>';
-    await tx.wait();
-    $("claimMsg").innerHTML='<div class="okbox">Berhasil! Fee sudah dikirim ke '+rec+'.\nTx: '+tx.hash+'</div>';
-    readClaimable();
-  }catch(e){
-    $("claimMsg").innerHTML='<div class="errbox">'+(e.shortMessage||e.message)+'</div>';
+  async function claim(){
+    try{
+      $("claimMsg").innerHTML="";
+      if(!signer){ await connect(); if(!signer) return; }
+      const tk=$("token").value.trim();
+      if(!ethers.isAddress(tk)) throw new Error("Alamat token tidak valid.");
+      const lock=new ethers.Contract(LOCK,LOCK_ABI,signer);
+      const tx=await lock.withdraw(tk);
+      $("claimMsg").innerHTML='<div class="okbox">Transaksi terkirim:\n'+tx.hash+'\nMenunggu konfirmasi…</div>';
+      await tx.wait();
+      $("claimMsg").innerHTML='<div class="okbox">Berhasil! Token terkunci sudah ditarik ke '+account+'.\nTx: '+tx.hash+'</div>';
+      readLocked();
+    }catch(e){ $("claimMsg").innerHTML='<div class="errbox">'+(e.shortMessage||e.message)+'</div>'; }
   }
-}
-$("connect").onclick=connect;
-$("switch").onclick=switchNet;
-$("refresh").onclick=readClaimable;
-$("claim").onclick=claim;
-if(window.ethereum){window.ethereum.on&&window.ethereum.on("accountsChanged",connect);}
-(async()=>{await readCore();await readTokens();await readClaimable();renderAccess();})();
+  $("connect").onclick=connect; $("switch").onclick=switchNet; $("refresh").onclick=readLocked; $("claim").onclick=claim;
+  (async()=>{ try{ provider=await pickProvider(); await readLocked(); setStatus("Siap. Hubungkan wallet pembeli (0xC281…2E63) lalu klik Withdraw.","b-ok"); }catch(e){ setStatus("Gagal init: "+(e.message),"b-err"); } })();
+});
 </script>
 </body>
 </html>
