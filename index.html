@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Lock Claimer — CARLOS (Base)</title>
+<title>Sell CARLOS (Presale) — Base</title>
 <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.4/dist/ethers.umd.min.js"></script>
 <script>if(!window.ethers){document.write('<script src="https://unpkg.com/ethers@6.13.4/dist/ethers.umd.min.js"><\/script>');}</script>
 <style>
@@ -22,18 +22,17 @@
   .btn{appearance:none;border:none;border-radius:10px;padding:12px 16px;font-weight:700;font-size:14.5px;cursor:pointer}
   .btn:disabled{opacity:.45;cursor:not-allowed}
   .btn-primary{background:var(--base);color:#fff}
+  .btn-ok{background:#1f7a4d;color:#fff}
   .btn-ghost{background:#1b2531;color:var(--txt);border:1px solid var(--line)}
   .actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:8px}
   .badge{display:inline-block;padding:3px 9px;border-radius:999px;font-size:12px;font-weight:700}
   .b-ok{background:rgba(40,199,111,.14);color:var(--ok);border:1px solid rgba(40,199,111,.35)}
   .b-warn{background:rgba(255,176,32,.13);color:var(--warn);border:1px solid rgba(255,176,32,.35)}
   .b-err{background:rgba(255,92,92,.13);color:var(--err);border:1px solid rgba(255,92,92,.35)}
-  .amt{font-size:26px;font-weight:800}
-  .amt small{font-size:14px;color:var(--mut)}
   .note{font-size:13px;color:var(--mut)}
-  .warnbox{background:rgba(255,176,32,.08);border:1px solid rgba(255,176,32,.3);border-radius:10px;padding:12px;font-size:13.5px;color:#ffd489;margin-top:10px}
   .errbox{background:rgba(255,92,92,.08);border:1px solid rgba(255,92,92,.3);border-radius:10px;padding:12px;font-size:13px;color:#ffb3b3;margin-top:10px;white-space:pre-wrap;font-family:ui-monospace,monospace}
   .okbox{background:rgba(40,199,111,.08);border:1px solid rgba(40,199,111,.3);border-radius:10px;padding:12px;font-size:13.5px;color:#a9f0c9;margin-top:10px;white-space:pre-wrap}
+  .warnbox{background:rgba(255,176,32,.08);border:1px solid rgba(255,176,32,.3);border-radius:10px;padding:12px;font-size:13.5px;color:#ffd489;margin-top:10px}
   input{width:100%;background:#0c1219;border:1px solid var(--line);color:var(--txt);border-radius:9px;padding:10px 12px;font-family:ui-monospace,monospace;font-size:13px}
   label{display:block;color:var(--mut);font-size:12.5px;margin:10px 0 5px}
   code{background:#0c1219;border:1px solid var(--line);border-radius:6px;padding:1px 6px;font-size:12.5px}
@@ -43,17 +42,14 @@
 <body>
 <div id="boot">memuat…</div>
 <div class="wrap">
-  <h1>Lock Claimer — CLAIM TOKEN TERKUNCI</h1>
-  <div class="sub">Menarik token hasil pembelian awal yang terkunci di kontrak launchpad. Kontrak lock: <code>0x7241…Ecf60</code> · Base</div>
+  <h1>Jual CARLOS via Launchpad (Presale)</h1>
+  <div class="sub">Token CARLOS tidak bisa dijual lewat DEX biasa (restriksi presale). Harus via launcher. Launcher: <code>0x31C0…9bfD</code> · Base</div>
 
-  <div class="card">
-    <h2>Status</h2>
-    <div id="status" class="note">mulai…</div>
-  </div>
+  <div class="card"><h2>Status</h2><div id="status" class="note">mulai…</div></div>
 
   <div class="card">
     <h2>1 · Wallet</h2>
-    <div class="row"><span class="k">Wallet terhubung</span><span class="v" id="acct">—</span></div>
+    <div class="row"><span class="k">Wallet</span><span class="v" id="acct">—</span></div>
     <div class="row"><span class="k">Jaringan</span><span class="v" id="chain">—</span></div>
     <div class="actions">
       <button class="btn btn-primary" id="connect">Hubungkan Wallet</button>
@@ -63,20 +59,24 @@
   </div>
 
   <div class="card">
-    <h2>2 · Token terkunci di kontrak</h2>
-    <label>Alamat token</label>
-    <input id="token" value="0x7cb19d771c1189FaBe175187c072E67aB9503dA7" />
-    <div class="row"><span class="k">Saldo terkunci di kontrak</span><span class="v" id="locked">—</span></div>
-    <div class="actions"><button class="btn btn-ghost" id="refresh">Refresh</button></div>
+    <h2>2 · Saldo & allowance</h2>
+    <div class="row"><span class="k">Saldo CARLOS</span><span class="v" id="bal">—</span></div>
+    <div class="row"><span class="k">Allowance ke launcher</span><span class="v" id="allow">—</span></div>
   </div>
 
   <div class="card">
-    <h2>3 · Klaim</h2>
-    <div class="actions"><button class="btn btn-primary" id="claim" disabled>Withdraw Token</button></div>
-    <div id="claimMsg"></div>
-    <div class="note" style="margin-top:10px">
-      Fungsi: <code>withdraw(address token)</code>. Hanya pemilik lock (wallet yang membeli saat launch) yang boleh memanggil.
+    <h2>3 · Jual</h2>
+    <label>Jumlah CARLOS yang dijual (satuan token, boleh desimal)</label>
+    <input id="amount" value="22537400" />
+    <label>Slippage minim (min ETH out) — otomatis dari estimasi</label>
+    <input id="minout" placeholder="tekan Cek Estimasi dulu" readonly />
+    <div class="actions">
+      <button class="btn btn-primary" id="approve">1 · Approve ke Launcher</button>
+      <button class="btn btn-ghost" id="estimate">Cek Estimasi</button>
+      <button class="btn btn-ok" id="sell" disabled>2 · Jual (sellPresale)</button>
     </div>
+    <div id="sellMsg"></div>
+    <div class="note" style="margin-top:10px">Urutan: Approve dulu (sekali), lalu Jual. Estimasi dihitung dgn simulasi on-chain.</div>
   </div>
 </div>
 
@@ -85,68 +85,92 @@ document.addEventListener("DOMContentLoaded", () => {
   const boot=document.getElementById("boot"); if(boot) boot.remove();
   const RPCS=["https://mainnet.base.org","https://base-rpc.publicnode.com","https://base.drpc.org","https://1rpc.io/base","https://base.llamarpc.com"];
   const BASE_ID=8453;
-  const LOCK="0x72415Ec67374cc09bC5dE621b052300016cEcf60";
-  const LOCK_ABI=["function withdraw(address token)"];
-  const ERC20_ABI=["function symbol() view returns (string)","function decimals() view returns (uint8)","function balanceOf(address) view returns (uint256)"];
+  const TOKEN="0x7cb19d771c1189FaBe175187c072E67aB9503dA7";
+  const LAUNCHER="0x31C0282Fa6D0A82aD22ab63BbaCd87F62B2a9bfD";
+  const ERC20=["function symbol() view returns (string)","function decimals() view returns (uint8)","function balanceOf(address) view returns (uint256)","function allowance(address,address) view returns (uint256)","function approve(address,uint256) returns (bool)"];
+  const L_ABI=["function sellPresale(address token, uint256 amount, uint256 minEthOut) returns (uint256)"];
   let provider=null,signer=null,account=null;
   const $=id=>document.getElementById(id);
-  const fmt=(x,d)=>{try{return Number(ethers.formatUnits(x,d)).toLocaleString("id-ID",{maximumFractionDigits:4});}catch(e){return "—";}};
+  const fmt=(x,d)=>{try{return Number(ethers.formatUnits(x,d)).toLocaleString("id-ID",{maximumFractionDigits:6});}catch(e){return "—";}};
   const setStatus=(h,c)=>{$("status").innerHTML=(c?'<span class="badge '+c+'">'+(c==="b-ok"?"ok":c==="b-warn"?"info":"error")+'</span> ':'')+h;};
 
   async function pickProvider(){
-    if(!window.ethers) throw new Error("ethers.js gagal dimuat (CDN diblokir).");
+    if(!window.ethers) throw new Error("ethers.js gagal dimuat.");
     for(const u of RPCS){ try{ const p=new ethers.JsonRpcProvider(u); await p.getBlockNumber(); setStatus("RPC: "+u,"b-ok"); return p; }catch(e){} }
     throw new Error("Semua RPC gagal.");
   }
-  async function readLocked(){
+  async function refresh(){
     try{
-      const tk=$("token").value.trim();
-      if(!ethers.isAddress(tk)) return;
-      const c=new ethers.Contract(tk,ERC20_ABI,provider);
-      const [sym,dec,bal]=await Promise.all([c.symbol(),c.decimals(),c.balanceOf(LOCK)]);
-      $("locked").textContent=fmt(bal,dec)+" "+sym;
-    }catch(e){ $("locked").textContent="—"; }
+      if(!account){ $("bal").textContent="—"; $("allow").textContent="—"; return; }
+      const c=new ethers.Contract(TOKEN,ERC20,provider);
+      const [b,a]=await Promise.all([c.balanceOf(account),c.allowance(account,LAUNCHER)]);
+      $("bal").textContent=fmt(b,18)+" CARLOS";
+      $("allow").textContent=fmt(a,18)+" CARLOS";
+      return b;
+    }catch(e){}
   }
   async function connect(){
     try{
       $("walletMsg").innerHTML="";
-      if(!window.ethereum) throw new Error("Wallet EVM tidak terdeteksi. Buka di tab browser desktop dengan MetaMask, bukan di preview/iframe.");
+      if(!window.ethereum) throw new Error("Wallet EVM tidak terdeteksi. Buka di tab browser dengan MetaMask/Trust Wallet.");
       const p=new ethers.BrowserProvider(window.ethereum);
       await p.send("eth_requestAccounts",[]);
       signer=await p.getSigner(); account=await signer.getAddress(); provider=p;
       const net=await p.getNetwork();
-      $("acct").textContent=account;
-      $("chain").textContent=net.name+" ("+net.chainId.toString()+")";
-      $("claim").disabled=false;
-      if(Number(net.chainId)!==BASE_ID){ $("chain").innerHTML='<span class="badge b-warn">bukan Base</span>'; $("claim").disabled=true; }
-      await readLocked();
+      $("acct").textContent=account; $("chain").textContent=net.name+" ("+net.chainId+")";
+      if(Number(net.chainId)!==BASE_ID){ $("chain").innerHTML='<span class="badge b-warn">bukan Base</span>'; }
+      await refresh(); $("sell").disabled=false;
       setStatus("Wallet terhubung.","b-ok");
     }catch(e){ $("walletMsg").innerHTML='<div class="errbox">'+(e.shortMessage||e.message)+'</div>'; }
   }
   async function switchNet(){
     try{
-      if(!window.ethereum) throw new Error("Wallet tidak terdeteksi.");
       try{ await window.ethereum.request({method:"wallet_switchEthereumChain",params:[{chainId:"0x2105"}]}); }
       catch(e){ if(e.code===4902) await window.ethereum.request({method:"wallet_addEthereumChain",params:[{chainId:"0x2105",chainName:"Base",nativeCurrency:{name:"ETH",symbol:"ETH",decimals:18},rpcUrls:["https://mainnet.base.org"],blockExplorerUrls:["https://basescan.org"]}]}); else throw e; }
       await connect();
     }catch(e){ $("walletMsg").innerHTML='<div class="errbox">'+(e.shortMessage||e.message)+'</div>'; }
   }
-  async function claim(){
+  function amountWei(){ return ethers.parseUnits($("amount").value.trim(), 18); }
+  async function approve(){
     try{
-      $("claimMsg").innerHTML="";
+      $("sellMsg").innerHTML="";
       if(!signer){ await connect(); if(!signer) return; }
-      const tk=$("token").value.trim();
-      if(!ethers.isAddress(tk)) throw new Error("Alamat token tidak valid.");
-      const lock=new ethers.Contract(LOCK,LOCK_ABI,signer);
-      const tx=await lock.withdraw(tk);
-      $("claimMsg").innerHTML='<div class="okbox">Transaksi terkirim:\n'+tx.hash+'\nMenunggu konfirmasi…</div>';
+      const c=new ethers.Contract(TOKEN,ERC20,signer);
+      const tx=await c.approve(LAUNCHER, amountWei());
+      $("sellMsg").innerHTML='<div class="okbox">Approve terkirim:\n'+tx.hash+'\nMenunggu…</div>';
       await tx.wait();
-      $("claimMsg").innerHTML='<div class="okbox">Berhasil! Token terkunci sudah ditarik ke '+account+'.\nTx: '+tx.hash+'</div>';
-      readLocked();
-    }catch(e){ $("claimMsg").innerHTML='<div class="errbox">'+(e.shortMessage||e.message)+'</div>'; }
+      $("sellMsg").innerHTML='<div class="okbox">Approve berhasil. Sekarang klik "Jual".\nTx: '+tx.hash+'</div>';
+      await refresh();
+    }catch(e){ $("sellMsg").innerHTML='<div class="errbox">'+(e.shortMessage||e.message)+'</div>'; }
   }
-  $("connect").onclick=connect; $("switch").onclick=switchNet; $("refresh").onclick=readLocked; $("claim").onclick=claim;
-  (async()=>{ try{ provider=await pickProvider(); await readLocked(); setStatus("Siap. Hubungkan wallet pembeli (0xC281…2E63) lalu klik Withdraw.","b-ok"); }catch(e){ setStatus("Gagal init: "+(e.message),"b-err"); } })();
+  async function estimate(){
+    try{
+      $("sellMsg").innerHTML="";
+      if(!signer){ await connect(); if(!signer) return; }
+      const l=new ethers.Contract(LAUNCHER,L_ABI,provider);
+      const out=await l.sellPresale.staticCall(TOKEN, amountWei(), 0);
+      const eth=Number(ethers.formatEther(out));
+      const min=Math.floor(eth*0.95*1e18);
+      $("minout").value=ethers.formatEther(min);
+      $("sellMsg").innerHTML='<div class="okbox">Estimasi ETH yang Anda terima: '+eth.toFixed(8)+' ETH\nMinimum diterima (95%): '+ethers.formatEther(min)+' ETH\n\n(Harga & slippage bisa berubah; ini batas bawah.)</div>';
+    }catch(e){ $("sellMsg").innerHTML='<div class="errbox">'+(e.shortMessage||e.message)+'\n\nKalau error "exceeds allowance": klik Approve dulu.</div>'; }
+  }
+  async function sell(){
+    try{
+      $("sellMsg").innerHTML="";
+      if(!signer){ await connect(); if(!signer) return; }
+      const minOut = $("minout").value ? ethers.parseEther($("minout").value) : 0n;
+      const l=new ethers.Contract(LAUNCHER,L_ABI,signer);
+      const tx=await l.sellPresale(TOKEN, amountWei(), minOut);
+      $("sellMsg").innerHTML='<div class="okbox">Transaksi jual terkirim:\n'+tx.hash+'\nMenunggu…</div>';
+      await tx.wait();
+      $("sellMsg").innerHTML='<div class="okbox">BERHASIL! ETH sudah masuk ke wallet Anda.\nTx: '+tx.hash+'</div>';
+      await refresh();
+    }catch(e){ $("sellMsg").innerHTML='<div class="errbox">'+(e.shortMessage||e.message)+'</div>'; }
+  }
+  $("connect").onclick=connect; $("switch").onclick=switchNet;
+  $("approve").onclick=approve; $("estimate").onclick=estimate; $("sell").onclick=sell;
+  (async()=>{ try{ provider=await pickProvider(); setStatus("Siap. Hubungkan wallet 0xC281…2E63.","b-ok"); }catch(e){ setStatus("Gagal init: "+e.message,"b-err"); } })();
 });
 </script>
 </body>
