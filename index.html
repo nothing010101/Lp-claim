@@ -3,70 +3,104 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Claim + Swap — GAME / JUMP / BIDWARS</title>
+<title>Launchpad Interaction Scanner — Base</title>
 <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.4/dist/ethers.umd.min.js"></script>
 <script>if(!window.ethers){document.write('<script src="https://unpkg.com/ethers@6.13.4/dist/ethers.umd.min.js"><\/script>');}</script>
 <style>
   :root{--card:#131a22;--line:#22303f;--txt:#e7eef7;--mut:#8fa3b8;--acc:#3b82f6;--ok:#28c76f;--warn:#ffb020;--err:#ff5c5c}
   *{box-sizing:border-box}
-  body{margin:0;background:linear-gradient(180deg,#070b10,#0b0f14 40%);color:var(--txt);font:15px/1.6 ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial;padding:18px}
-  .wrap{max-width:900px;margin:0 auto}
+  body{margin:0;background:linear-gradient(180deg,#070b10,#0b0f14 40%);color:var(--txt);font:15px/1.6 ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial;padding:16px}
+  .wrap{max-width:1000px;margin:0 auto}
   h1{font-size:20px;margin:0 0 4px}
   .sub{color:var(--mut);font-size:13px;margin-bottom:14px}
   .card{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:16px;margin-bottom:14px}
   .card h2{font-size:12.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--mut);margin:0 0 10px}
   .warnbox{background:rgba(255,176,32,.08);border:1px solid rgba(255,176,32,.35);border-radius:10px;padding:12px;font-size:12.8px;color:#ffd489;margin-bottom:14px;line-height:1.55}
-  .row{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px dashed #1e2a37}
-  .row:last-child{border-bottom:none}
-  .k{color:var(--mut)} .v{font-family:ui-monospace,Menlo,monospace;font-size:13px;text-align:right;word-break:break-all}
+  textarea,input,select{width:100%;background:#0c1219;border:1px solid var(--line);color:var(--txt);border-radius:9px;padding:10px 12px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px}
+  textarea{min-height:120px;resize:vertical}
+  label{display:block;color:var(--mut);font-size:12.5px;margin:10px 0 5px}
+  .row{display:flex;gap:10px;flex-wrap:wrap}
+  .row>div{flex:1;min-width:190px}
   .btn{appearance:none;border:none;border-radius:9px;padding:10px 14px;font-weight:700;font-size:13.5px;cursor:pointer}
   .btn:disabled{opacity:.45;cursor:not-allowed}
   .btn-primary{background:var(--acc);color:#fff}
   .btn-ok{background:#1f7a4d;color:#fff}
   .btn-ghost{background:#1b2531;color:var(--txt);border:1px solid var(--line)}
-  .actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
-  .tokcard{background:#0e1116;border:1px solid var(--line);border-radius:11px;padding:14px;margin-bottom:12px}
-  .tokhead{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
-  .tokname{font-size:16px;font-weight:800}
-  .mini{font-size:12px;font-family:ui-monospace,Menlo,monospace;color:var(--mut);word-break:break-all}
-  .stat{font-size:13px;margin-top:6px}
-  .ok{color:var(--ok)} .err{color:var(--err)} .warnc{color:var(--warn)} .muted{color:var(--mut)}
-  .log{background:#0c1219;border:1px solid var(--line);border-radius:10px;padding:10px;font-family:ui-monospace,monospace;font-size:12px;white-space:pre-wrap;word-break:break-all;margin-top:10px;max-height:240px;overflow:auto}
+  .btn-danger{background:#7a1f1f;color:#fff}
+  .actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+  .hint{color:var(--mut);font-size:11.8px;margin-top:-4px}
+  progress{width:100%;height:10px;border-radius:6px}
+  .wblock{background:#0e1116;border:1px solid var(--line);border-radius:11px;padding:13px;margin-bottom:11px}
+  .whead{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap}
+  .waddr{font-family:ui-monospace,monospace;font-size:13px;word-break:break-all;font-weight:700}
+  pre.body{margin:8px 0 0;background:#0c1219;border:1px solid var(--line);border-radius:8px;padding:10px;font-family:ui-monospace,monospace;font-size:12px;white-space:pre-wrap;word-break:break-word;max-height:260px;overflow:auto}
+  .badge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:700}
+  .b-ok{background:rgba(40,199,111,.14);color:var(--ok);border:1px solid rgba(40,199,111,.35)}
+  .b-mut{background:#1c2330;color:var(--mut);border:1px solid var(--line)}
+  .mini{padding:5px 9px;font-size:11.5px;border-radius:6px}
   #boot{position:fixed;inset:0;background:#070b10;display:flex;align-items:center;justify-content:center;z-index:99;color:var(--mut)}
+  .stat{font-size:13px;color:var(--mut);margin-top:8px}
+  .stat b{color:var(--txt)}
 </style>
 </head>
 <body>
 <div id="boot">memuat…</div>
 <div class="wrap">
-  <h1>Claim (release) + Swap → WETH</h1>
-  <div class="sub">GAME · JUMP · BIDWARS — klaim token vested, lalu jual ke pool Uniswap V3.</div>
+  <h1>Launchpad Interaction Scanner <span style="color:var(--mut)">— Base</span></h1>
+  <div class="sub">Cek: alamat mana yang pernah berinteraksi dengan launchpad / locker / LP NFT / Bankr.</div>
 
   <div class="warnbox">
-    <b>PENTING:</b> tiap token vested ke <b>wallet yang berbeda</b> (GAME→<code>0x901e…e076</code>, JUMP→<code>0x46d9…2e29</code>, BIDWARS→<code>0x7ddb…fabd</code>).
-    Hubungkan wallet yang sesuai; baris yang bukan milik wallet aktif akan ditandai "bukan wallet ini".<br>
-    • Likuiditas pool tipis → hasil jual kecil. Slippage default <b>5%</b>.<br>
-    • Halaman ini murni client-side, tanpa backend.
+    Semua berjalan <b>di browser Anda</b> (tanpa backend). Kunci API disimpan di <code>localStorage</code> browser ini dan hanya dikirim ke layanannya masing-masing.<br>
+    • <b>Sigma TIDAK dicek</b> (itu bot buy/sell Telegram, bukan launchpad).<br>
+    • Urutan sumber data: <b>Alchemy</b> → <b>Etherscan (chainid 8453)</b> → <b>Blockscout publik</b>.
   </div>
 
   <div class="card">
-    <h2>Wallet</h2>
-    <div class="row"><span class="k">Wallet</span><span class="v" id="acct">—</span></div>
-    <div class="row"><span class="k">Jaringan</span><span class="v" id="chain">—</span></div>
+    <h2>1 · Konfigurasi</h2>
+    <div class="row">
+      <div><label>Alchemy API key (Base)</label><input id="alchemyKey" placeholder="isi key Alchemy" autocomplete="off" spellcheck="false"></div>
+      <div><label>Etherscan API key (V2)</label><input id="etherscanKey" placeholder="opsional" autocomplete="off" spellcheck="false"></div>
+    </div>
+    <label>Kontrak tambahan (format: <code>0xalamat,Label</code> — satu per baris)</label>
+    <textarea id="extraReg" style="min-height:70px" placeholder="0x....,ape.store V3"></textarea>
+    <div class="row" style="margin-top:10px">
+      <div><label>Ukuran batch LP NFT (alamat/request)</label><input id="batchSize" value="25"></div>
+      <div><label>Jeda antar request (ms)</label><input id="delay" value="140"></div>
+      <div><label>&nbsp;</label>
+        <label style="margin:0;display:flex;align-items:center;gap:6px;color:var(--txt)"><input type="checkbox" id="force" style="width:auto;margin:0"> Paksa scan ulang (abaikan cache)</label>
+      </div>
+    </div>
     <div class="actions">
-      <button class="btn btn-primary" id="connect">Hubungkan Wallet</button>
-      <button class="btn btn-ghost" id="switch">Pindah ke Base</button>
-      <button class="btn btn-ghost" id="refresh">Refresh</button>
+      <button class="btn btn-ghost" id="clearCache">Hapus cache scan</button>
     </div>
   </div>
 
   <div class="card">
-    <h2>Token</h2>
-    <div id="list"></div>
-    <div class="actions">
-      <button class="btn btn-ok" id="all">Klaim + Jual SEMUA (wallet ini)</button>
-      <button class="btn btn-ghost" id="unwrap">Unwrap WETH → ETH</button>
+    <h2>2 · Daftar alamat</h2>
+    <label>Paste alamat (satu per baris)</label>
+    <textarea id="addrs" placeholder="0x...&#10;0x..."></textarea>
+    <div class="row">
+      <div><label>Impor file (.txt/.csv)</label><input type="file" id="file" accept=".txt,.csv,text/plain"></div>
+      <div><label>&nbsp;</label><div class="actions" style="margin-top:0"><button class="btn btn-danger" id="clearAll">Bersihkan</button></div></div>
     </div>
-    <div class="log" id="log">siap.</div>
+    <div class="actions">
+      <button class="btn btn-primary" id="scan">⟶ Scan</button>
+      <button class="btn btn-ghost" id="stopBtn" disabled>Stop</button>
+    </div>
+    <progress id="prog" max="100" value="0" style="margin-top:10px"></progress>
+    <div class="stat" id="status">siap.</div>
+  </div>
+
+  <div class="card" id="outCard" style="display:none">
+    <h2>3 · Hasil (per wallet, bisa copy sendiri)</h2>
+    <div class="actions" style="margin-bottom:8px">
+      <button class="btn btn-ok" id="copySig">Copy Semua yang Ada Sinyal</button>
+      <button class="btn btn-ghost" id="copyAll">Copy Semua</button>
+      <button class="btn btn-ghost" id="csv">Export CSV</button>
+      <label style="margin:0;display:flex;align-items:center;gap:6px;color:var(--txt);font-size:13px"><input type="checkbox" id="onlySig" style="width:auto;margin:0"> Hanya tampilkan yang ada sinyal</label>
+    </div>
+    <div class="stat" id="summary"></div>
+    <div id="list" style="margin-top:12px"></div>
   </div>
 </div>
 
@@ -74,173 +108,288 @@
 document.addEventListener("DOMContentLoaded", () => {
   const boot=document.getElementById("boot"); if(boot) boot.remove();
   const $=id=>document.getElementById(id);
+  const LS_KEY="lpscan_cfg", LS_CACHE="lpscan_cache";
 
-  const RPCS=["https://mainnet.base.org","https://base-rpc.publicnode.com","https://base.drpc.org"];
-  const BASE_ID=8453;
-  const WETH="0x4200000000000000000000000000000000000006";
-  const ROUTER="0x2626664c2603336E57B271c5C0b26F421741e481"; // Uniswap V3 SwapRouter02 (Base)
-  const FEE=10000; // 1%
-  const TOKENS=[
-    {sym:"GAME",   addr:"0x9C2033976a46836498329cb0eC6e0d0d9F3cA37e", owner:"0x901e209669e3719023a735ef368565d39e760e7b"},
-    {sym:"JUMP",   addr:"0x7e7ddA444011595f3Dd3117d0B9C902C431b58fe", owner:"0x46d9e0f3a5fb527dd1c92aabce44c90827e42e29"},
-    {sym:"BIDWARS",addr:"0x444923b21d3Af0D1a3530b239f6d3E65ccB6d9df", owner:"0x7ddb848f01c7df2118f941a3e0d5dafdcc05fabd"}
-  ];
-  const TOK_ABI=[
-    "function release()",
-    "function computeAvailableVestedAmount(address account) view returns (uint256)",
-    "function balanceOf(address) view returns (uint256)",
-    "function decimals() view returns (uint8)",
-    "function symbol() view returns (string)",
-    "function approve(address spender,uint256 amount) returns (bool)",
-    "function allowance(address owner,address spender) view returns (uint256)"
-  ];
-  const ROUTER_ABI=["function exactInputSingle((address tokenIn,address tokenOut,uint24 fee,address recipient,uint256 amountIn,uint256 amountOutMinimum,uint160 sqrtPriceLimitX96) params) payable returns (uint256 amountOut)"];
-  const WETH_ABI=["function withdraw(uint256 wad)","function balanceOf(address) view returns (uint256)"];
+  /* ================= CONFIG ================= */
+  const CHAIN_ID=8453;
+  const V3PM="0x03a520b32C04BF3bEEf7BEb72E919cf822Ed34f1";
+  const V4PM="0x7C5f5A4bBd8fD63184577525326123B519429bDc";
+  const CLANKER="0xAa6e44bccd3Eb1310f2DA525772cF23E7Dc5Eb12";
 
-  let provider=null, signer=null, account=null, slip=5;
-
-  const log=m=>{ const el=$("log"); el.textContent = (el.textContent==="siap."?"":el.textContent+"\n") + m; el.scrollTop=el.scrollHeight; };
-  const short=a=>a?a.slice(0,6)+"…"+a.slice(-4):"—";
-  const fmt=(x,d)=> Number(ethers.formatUnits(x,d)).toLocaleString("id-ID",{maximumFractionDigits:6});
-
-  async function pickProvider(){
-    if(!window.ethers) throw new Error("ethers.js gagal dimuat.");
-    for(const u of RPCS){ try{ const p=new ethers.JsonRpcProvider(u); await p.getBlockNumber(); return p; }catch(e){} }
-    throw new Error("RPC gagal.");
-  }
-
-  function renderStates(states){
-    $("list").innerHTML = TOKENS.map((t,i)=>{
-      const st=states[i];
-      const isMine = account && t.owner && t.owner.toLowerCase()===account.toLowerCase();
-      const none  = account && !isMine;
-      return `<div class="tokcard">
-        <div class="tokhead">
-          <div><span class="tokname">${st.sym||t.sym}</span></div>
-          <div class="mini">${t.addr}</div>
-        </div>
-        <div class="stat">Alokasi vested tersedia: <b class="${st.avail>0n?'ok':'muted'}">${st.avail!=null?fmt(st.avail,st.dec)+" "+t.sym:"—"}</b></div>
-        <div class="stat">Saldo sekarang: <b>${st.bal!=null?fmt(st.bal,st.dec)+" "+t.sym:"—"}</b>
-          ${st.weth!=null?` · WETH: <b>${fmt(st.weth,18)}</b>`:""}</div>
-        <div class="stat">${ none ? '<span class="warnc">bukan wallet ini (owner: '+short(t.owner)+')</span>'
-                              : (isMine?'<span class="ok">wallet pemilik ✓</span>':'') }</div>
-        <div class="actions">
-          <button class="btn btn-primary" data-act="release" data-i="${i}" ${(!isMine)?"disabled":""}>1 · Klaim (release)</button>
-          <button class="btn btn-ok" data-act="swap" data-i="${i}" ${(!isMine)?"disabled":""}>2 · Jual → WETH</button>
-          <button class="btn btn-ghost" data-act="both" data-i="${i}" ${(!isMine)?"disabled":""}>Klaim + Jual</button>
-        </div>
-      </div>`;
-    }).join("");
-  }
-
-  async function loadToken(t){
-    const c=new ethers.Contract(t.addr,TOK_ABI,provider);
-    const st={sym:t.sym,dec:18,avail:null,bal:null,weth:null};
-    try{ st.dec=Number(await c.decimals()); }catch(e){}
-    try{ st.sym=await c.symbol(); }catch(e){}
-    try{ st.bal=await c.balanceOf(account||ethers.ZeroAddress); }catch(e){}
-    try{ st.avail=await c.computeAvailableVestedAmount(account||ethers.ZeroAddress); }catch(e){ st.avail=null; }
-    try{ st.weth=await new ethers.Contract(WETH,WETH_ABI,provider).balanceOf(account||ethers.ZeroAddress); }catch(e){}
-    return st;
-  }
-
-  async function refresh(){
-    if(!provider) return;
-    const sts=[]; for(const t of TOKENS){ sts.push(await loadToken(t)); }
-    renderStates(sts);
-  }
-
-  async function releaseToken(i){
-    const t=TOKENS[i];
-    const c=new ethers.Contract(t.addr,TOK_ABI,signer);
-    log(`→ release() ${t.sym}…`);
-    const tx=await c.release();
-    log(`   tx ${tx.hash}`);
-    await tx.wait();
-    log(`✓ ${t.sym} klaim sukses`);
-  }
-
-  async function swapToken(i){
-    const t=TOKENS[i];
-    const c=new ethers.Contract(t.addr,TOK_ABI,signer);
-    const bal=await c.balanceOf(account);
-    if(bal===0n){ log(`- ${t.sym}: saldo 0, skip`); return; }
-    const router=new ethers.Contract(ROUTER,ROUTER_ABI,signer);
-    const params={tokenIn:t.addr,tokenOut:WETH,fee:FEE,recipient:account,amountIn:bal,amountOutMinimum:0n,sqrtPriceLimitX96:0n};
-    let quote=0n;
-    try{ quote=await router.exactInputSingle.staticCall(params); log(`   quote ${t.sym}: ${ethers.formatEther(quote)} WETH`); }
-    catch(e){ log(`   quote gagal (${e.shortMessage||e.message}) — lanjut minOut=0`); }
-    const minOut = quote>0n ? (quote*BigInt(100-slip))/100n : 0n;
-    const allow=await c.allowance(account,ROUTER);
-    if(allow<bal){
-      log(`   approve ${t.sym}…`);
-      const at=await c.approve(ROUTER,bal); await at.wait();
-    }
-    const tx=await router.exactInputSingle({...params,amountOutMinimum:minOut});
-    log(`   swap tx ${tx.hash}`);
-    await tx.wait();
-    log(`✓ ${t.sym} terjual (min ${ethers.formatEther(minOut)} WETH)`);
-  }
-
-  async function unwrap(){
-    const w=new ethers.Contract(WETH,WETH_ABI,signer);
-    const b=await w.balanceOf(account);
-    if(b===0n){ log("- WETH 0"); return; }
-    log(`→ unwrap ${ethers.formatEther(b)} WETH → ETH`);
-    const tx=await w.withdraw(b); await tx.wait();
-    log("✓ ETH diterima");
-  }
-
-  async function connect(){
-    try{
-      if(!window.ethereum) throw new Error("Wallet EVM tidak terdeteksi.");
-      const p=new ethers.BrowserProvider(window.ethereum);
-      await p.send("eth_requestAccounts",[]);
-      signer=await p.getSigner(); account=await signer.getAddress(); provider=p;
-      const net=await p.getNetwork();
-      $("acct").textContent=account;
-      $("chain").textContent=net.name+" ("+net.chainId+")";
-      if(Number(net.chainId)!==BASE_ID) $("chain").innerHTML='<span class="warnc">bukan Base</span>';
-      log("wallet: "+account);
-      await refresh();
-    }catch(e){ log("ERR connect: "+(e.shortMessage||e.message)); }
-  }
-  async function switchNet(){
-    try{
-      try{ await window.ethereum.request({method:"wallet_switchEthereumChain",params:[{chainId:"0x2105"}]}); }
-      catch(e){ if(e.code===4902) await window.ethereum.request({method:"wallet_addEthereumChain",params:[{chainId:"0x2105",chainName:"Base",nativeCurrency:{name:"ETH",symbol:"ETH",decimals:18},rpcUrls:["https://mainnet.base.org"],blockExplorerUrls:["https://basescan.org"]}]}); else throw e; }
-      await connect();
-    }catch(e){ log("ERR switch: "+(e.shortMessage||e.message)); }
-  }
-
-  $("connect").onclick=connect;
-  $("switch").onclick=switchNet;
-  $("refresh").onclick=async()=>{ if(!signer){ await connect(); } else { await refresh(); } };
-  $("unwrap").onclick=async()=>{ if(!signer){ await connect(); } await unwrap(); };
-  $("all").onclick=async()=>{
-    if(!signer){ await connect(); if(!signer) return; }
-    for(let i=0;i<TOKENS.length;i++){
-      if(!account || TOKENS[i].owner.toLowerCase()!==account.toLowerCase()){ continue; }
-      try{ await releaseToken(i); await swapToken(i); }catch(e){ log(`✗ ${TOKENS[i].sym}: ${e.shortMessage||e.message}`); }
-      await refresh();
-    }
+  const REGISTRY={
+    "0x31c0282fa6d0a82ad22ab63bbacd87f62b2a9bfd":"Tribes launcher",
+    "0x0bf8edd756ff6caf3f583d67a9fd8b237e40f58a":"ape.store",
+    "0x3ccc78545f675a188b7521f7f4b4791995752635":"ape.store curve",
+    "0xff747d4cea4ed9c24334a77b0e4824e8ec9a6808":"Flaunch",
+    "0xf66dea7b3e897cd44a5a231c61b6b4423d613259":"Virtuals launcher",
+    "0xaa6e44bccd3eb1310f2da525772cf23e7dc5eb12":"Clanker locker",
+    "0x7a306c63a1ccc180cbf60fa2a92fbb31e16904f4":"beliefs.social",
+    "0x1111111111166b7fe7bd91427724b487980afc69":"Zora",
+    "0x7777777f279eba3d3ad8f4e708545291a6fdba8b":"Zora rewards",
+    "0xc5a076cad94176c2996b32d8466be1ce757faa27":"Mint Club bond",
+    "0x555555555a4161c1c0ba310fc1c993086d3de042":"StackMarket",
+    "0x4252827dc18e14ebbde7d9b4addc982703dfb15a":"LockerFactory",
+    "0xa82685520c463a752d5319e6616e4e5fd0215e33":"TokenVesting",
+    "0x03a520b32c04bf3beef7beb72e919cf822ed34f1":"UniV3 PositionManager",
+    "0x7c5f5a4bbd8fd63184577525326123b519429bdc":"UniV4 PositionManager",
+    "0x2626664c2603336e57b271c5c0b26f421741e481":"UniV3 SwapRouter"
   };
-  $("list").addEventListener("click",async e=>{
-    const b=e.target.closest("[data-act]"); if(!b) return;
-    if(!signer){ await connect(); if(!signer) return; }
-    const i=Number(b.dataset.i), act=b.dataset.act;
-    try{
-      if(act==="release") await releaseToken(i);
-      else if(act==="swap") await swapToken(i);
-      else { await releaseToken(i); await swapToken(i); }
-      await refresh();
-    }catch(err){ log(`✗ ${TOKENS[i].sym}: ${err.shortMessage||err.message}`); }
-  });
+  const SEL={
+    "0x4d8b653c":"sellPresale","0xdd68a83a":"buyPresale","0x2cd42262":"createAndBuy",
+    "0x40ffae2e":"create","0x6c025572":"buy","0x3581f5bb":"sell","0xede66976":"fairLaunch",
+    "0xa033fcd4":"collectFees","0xa480ca79":"collectFees","0xb17acdcd":"collectFees",
+    "0x86d1a69f":"release","0x51cff8d9":"withdraw","0x1e83409a":"claim",
+    "0xfc6f7865":"collect(NFT)","0x641070f7":"launch(Tribes)","0xbc63329d":"createToken(beliefs)",
+    "0xadc9772e":"stake","0x2e1a7d4d":"unwrap","0x9f9471d3":"+","0x74be850c":"+"
+  };
+  const FUNC_ONLY=["launch","fairLaunch","createAndBuy","create","deployToken","collectFees","release","sellPresale","buyPresale","stake","claim","withdraw","buy","sell"];
 
-  (async()=>{
-    try{ provider=await pickProvider(); await refresh(); log("provider siap. hubungkan wallet."); }
-    catch(e){ log("ERR init: "+e.message); }
-  })();
+  let results=[], stopped=false;
+
+  const cache=JSON.parse(localStorage.getItem(LS_CACHE)||"{}");
+  const saveCache=()=>{ try{localStorage.setItem(LS_CACHE,JSON.stringify(cache));}catch(e){} };
+
+  try{
+    const c=JSON.parse(localStorage.getItem(LS_KEY)||"{}");
+    if(c.alchemy) $("alchemyKey").value=c.alchemy;
+    if(c.etherscan) $("etherscanKey").value=c.etherscan;
+    if(c.extra) $("extraReg").value=c.extra;
+  }catch(e){}
+  const saveCfg=()=>{ try{localStorage.setItem(LS_KEY,JSON.stringify({alchemy:$("alchemyKey").value.trim(),etherscan:$("etherscanKey").value.trim(),extra:$("extraReg").value}));}catch(e){} };
+  ["alchemyKey","etherscanKey","extraReg"].forEach(id=>$(id).addEventListener("input",saveCfg));
+
+  function registry(){
+    const r={...REGISTRY};
+    ($("extraReg").value||"").split(/\r?\n/).forEach(l=>{
+      const [a,name]=l.split(",").map(s=>(s||"").trim());
+      if(a && /^0x[0-9a-fA-F]{40}$/.test(a)) r[a.toLowerCase()]=name||"custom";
+    });
+    return r;
+  }
+
+  const pad=a=>a.toLowerCase().replace(/^0x/,"").padStart(64,"0");
+  const rpcUrl=()=>{ const k=$("alchemyKey").value.trim(); return k?`https://base-mainnet.g.alchemy.com/v2/${k}`:"https://mainnet.base.org"; };
+  const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+  const setStatus=(t,cls)=>{ $("status").innerHTML=(cls?`<span class="badge ${cls}">${cls==="b-ok"?"ok":cls==="b-warn"?"info":"error"}</span> `:"")+t; };
+
+  async function fetchJson(url, opts=null, tries=4){
+    let wait=600,last;
+    for(let i=0;i<tries;i++){
+      try{
+        const res=await fetch(url,opts||undefined);
+        if(res.status===429||res.status===503){ last=new Error("HTTP "+res.status); }
+        else if(!res.ok){ last=new Error("HTTP "+res.status); }
+        else return await res.json();
+      }catch(e){ last=e; }
+      await sleep(wait); wait*=2;
+    }
+    throw last||new Error("gagal");
+  }
+
+  async function rpcBatch(calls){
+    const body=calls.map((c,i)=>({jsonrpc:"2.0",id:i,method:"eth_call",params:[{to:c.to,data:c.data},"latest"]}));
+    const out=await fetchJson(rpcUrl(),{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(body)});
+    const arr=Array.isArray(out)?out:[out];
+    const map={}; arr.forEach(r=>{ map[r.id]=r.result!==undefined?r.result:null; });
+    return calls.map((c,i)=>map[i]!==undefined?map[i]:null);
+  }
+
+  async function txAlchemy(addr){
+    const k=$("alchemyKey").value.trim(); if(!k) throw new Error("no alchemy");
+    const body=[
+      {jsonrpc:"2.0",id:0,method:"alchemy_getAssetTransfers",params:[{fromBlock:"0x0",toBlock:"latest",fromAddress:addr,category:["external","erc20","erc721"],maxCount:"0x3e8",order:"desc",excludeZeroValue:false,withMetadata:false}]},
+      {jsonrpc:"2.0",id:1,method:"alchemy_getAssetTransfers",params:[{fromBlock:"0x0",toBlock:"latest",toAddress:addr,category:["erc721"],maxCount:"0x3e8",order:"desc",excludeZeroValue:false,withMetadata:false}]}
+    ];
+    const out=await fetchJson(rpcUrl(),{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(body)});
+    const arr=Array.isArray(out)?out:[out];
+    const res={out:[],in721:[]};
+    arr.forEach(r=>{
+      const list=(r.result&&r.result.transfers)||[];
+      list.forEach(t=>{
+        const to=(t.to||"").toLowerCase();
+        if(r.id===0) res.out.push({to, from:(t.from||"").toLowerCase(), cat:t.category, hash:t.hash});
+        else res.in721.push({to, from:(t.from||"").toLowerCase(), raw:(t.rawContract||{}).address, hash:t.hash});
+      });
+    });
+    return {source:"alchemy", txs:res.out, in721:res.in721};
+  }
+  async function txEtherscan(addr){
+    const k=$("etherscanKey").value.trim(); if(!k) throw new Error("no etherscan");
+    const u=`https://api.etherscan.io/v2/api?chainid=${CHAIN_ID}&module=account&action=txlist&address=${addr}&page=1&offset=200&sort=desc&apikey=${k}`;
+    const d=await fetchJson(u);
+    if(!Array.isArray(d.result)) throw new Error(d.result||d.message||"err");
+    return {source:"etherscan", txs:d.result.map(t=>{
+      const to=(t.to||"").toLowerCase();
+      let fn="";
+      if(t.functionName) fn=t.functionName.split("(")[0];
+      else if(t.input && t.input.length>=10) fn=SEL[t.input.slice(0,10)]||"";
+      return {to, from:(t.from||"").toLowerCase(), fn, hash:t.hash, contract:(t.contractAddress||"").toLowerCase()};
+    }), in721:[]};
+  }
+  async function txBlockscout(addr){
+    const d=await fetchJson(`https://base.blockscout.com/api/v2/addresses/${addr}/transactions`);
+    const items=d.items||[];
+    return {source:"blockscout", txs:items.map(t=>{
+      const to=((t.to||{}).hash||"").toLowerCase();
+      return {to, from:((t.from||{}).hash||"").toLowerCase(), fn:(t.method||""), hash:t.hash, contract:((t.created_contract||{}).hash||"").toLowerCase()};
+    }), in721:[]};
+  }
+  async function getTx(addr){
+    for(const f of [txAlchemy,txEtherscan,txBlockscout]){
+      try{ const r=await f(addr); if(r && r.txs) return r; }catch(e){}
+    }
+    return {source:"none", txs:[], in721:[]};
+  }
+
+  async function scanOne(addr){
+    const reg=registry();
+    const t=await getTx(addr);
+    const platforms=new Set(), funcs=new Set();
+    (t.txs||[]).forEach(x=>{
+      const p=reg[x.to]; if(p){ platforms.add(p); }
+      if(x.fn && FUNC_ONLY.some(f=>x.fn.toLowerCase().startsWith(f.toLowerCase()))) funcs.add(x.fn.split("(")[0]);
+      if(x.contract){ const cp=reg[x.contract]; if(cp) platforms.add(cp+" (deploy)"); }
+    });
+    return {addr, source:t.source, platforms:[...platforms], funcs:[...funcs], in721:(t.in721||[]).length, lp:{}, bankr:null};
+  }
+
+  async function lpBatch(list){
+    const size=Math.max(1,parseInt($("batchSize").value||"25",10));
+    for(let i=0;i<list.length;i+=size){
+      const chunk=list.slice(i,i+size);
+      const calls=[];
+      chunk.forEach(r=>{
+        calls.push({to:V3PM,data:"0x70a08231"+pad(r.addr)});
+        calls.push({to:V4PM,data:"0x70a08231"+pad(r.addr)});
+        calls.push({to:CLANKER,data:"0xcd8852f0"+pad(r.addr)});
+      });
+      let res=null;
+      try{ res=await rpcBatch(calls); }catch(e){ res=new Array(calls.length).fill(null); }
+      chunk.forEach((r,idx)=>{
+        const g=j=>res[idx*3+j];
+        const num=v=>{ try{return v&&v!=="0x"?parseInt(v,16):0;}catch(e){return 0;} };
+        r.lp={v3:num(g(0)), v4:num(g(1)), clanker:(g(2)&&g(2)!=="0x"?1:0)};
+      });
+      await sleep(parseInt($("delay").value||"140",10));
+      if(stopped) break;
+    }
+  }
+
+  async function bankrCheck(r){
+    try{
+      const d=await fetchJson(`https://api.bankr.bot/public/doppler/creator-fees/${r.addr}?days=30`,null,2);
+      if(d && d.tokens && d.tokens.length){
+        r.bankr={tokens:d.tokens.map(t=>({sym:t.symbol,addr:t.tokenAddress,claim:t.claimable})), totals:d.totals||null};
+      }
+    }catch(e){}
+  }
+
+  function hasSignal(r){ return r.platforms.length>0 || Object.values(r.lp||{}).some(v=>v>0) || (r.bankr&&r.bankr.tokens.length); }
+  function block(r){
+    const lines=[];
+    lines.push("WALLET  "+r.addr);
+    lines.push("platform : "+(r.platforms.length?r.platforms.join(", "):"—"));
+    lines.push("fungsi   : "+(r.funcs.length?r.funcs.join(", "):"—"));
+    lines.push("LP NFT   : V3="+((r.lp&&r.lp.v3)||0)+"  V4="+((r.lp&&r.lp.v4)||0)+"  Clanker="+((r.lp&&r.lp.clanker)||0));
+    if(r.bankr && r.bankr.tokens.length){
+      r.bankr.tokens.forEach(t=>{
+        const c=t.claim||{};
+        lines.push("Bankr    : "+t.sym+" — claimable "+((c.token0)||"0")+" WETH + "+((c.token1)||"0")+" "+t.sym);
+      });
+    } else lines.push("Bankr    : —");
+    lines.push("sumber   : "+r.source);
+    lines.push("verdict  : "+(hasSignal(r)?"ADA SINYAL":"tidak ada"));
+    return lines.join("\n");
+  }
+  function render(){
+    const only=$("onlySig").checked;
+    const rows=results.filter(r=>!only||hasSignal(r));
+    $("outCard").style.display="block";
+    const sig=results.filter(hasSignal).length;
+    $("summary").innerHTML=`total: <b>${results.length}</b> · ada sinyal: <b>${sig}</b> · tanpa sinyal: <b>${results.length-sig}</b> · tampil: <b>${rows.length}</b>`;
+    $("list").innerHTML=rows.map((r,i)=>
+      '<div class="wblock" data-i="'+results.indexOf(r)+'">'+
+        '<div class="whead"><span class="waddr">'+r.addr+'</span>'+
+        (hasSignal(r)?'<span class="badge b-ok">ADA SINYAL</span>':'<span class="badge b-mut">tidak ada</span>')+'</div>'+
+        '<pre class="body">'+block(r).replace(/[<>&]/g,c=>({"<":"&lt;",">":"&gt;","&":"&amp;"}[c]))+'</pre>'+
+        '<div class="actions"><button class="btn btn-ok mini" data-copy="'+results.indexOf(r)+'">Copy</button></div>'+
+      '</div>').join("");
+  }
+
+  function parseAddrs(){
+    return [...new Set(($("addrs").value||"").split(/[\s,;]+/).map(s=>s.trim().toLowerCase()).filter(s=>/^0x[0-9a-f]{40}$/.test(s)))];
+  }
+
+  async function run(){
+    const addrs=parseAddrs();
+    if(!addrs.length) return alert("Belum ada alamat valid.");
+    stopped=false; results=[];
+    $("outCard").style.display="block"; $("list").innerHTML="";
+    $("scan").disabled=true; $("stopBtn").disabled=false;
+    const force=$("force").checked;
+    const prog=$("prog"); prog.value=0; prog.max=addrs.length;
+    const srcCount={};
+    for(let i=0;i<addrs.length;i++){
+      if(stopped){ setStatus("dihentikan oleh pengguna.","b-warn"); break; }
+      const a=addrs[i];
+      let r=null;
+      if(!force && cache[a] && cache[a].addr){ r=cache[a]; }
+      else { r=await scanOne(a); if(r) r.fresh=true; }
+      results.push(r);
+      srcCount[r.source]=(srcCount[r.source]||0)+1;
+      prog.value=i+1;
+      setStatus(`${i+1}/${addrs.length} — sumber: ${r.source}`, "b-warn");
+      if(i%10===0) render();
+      await sleep(parseInt($("delay").value||"140",10));
+    }
+    await lpBatch(results);
+    for(let i=0;i<results.length;i++){
+      if(stopped) break;
+      await bankrCheck(results[i]);
+      if(i%10===0) render();
+      await sleep(60);
+    }
+    results.forEach(r=>{ const {fresh,...c}=r; cache[r.addr]=c; });
+    saveCache();
+    render();
+    $("scan").disabled=false; $("stopBtn").disabled=true;
+    setStatus("selesai. sumber: "+Object.entries(srcCount).map(([k,v])=>k+"="+v).join(", "),"b-ok");
+  }
+
+  $("scan").onclick=run;
+  $("stopBtn").onclick=()=>{ stopped=true; };
+  $("onlySig").onchange=render;
+  $("clearCache").onclick=()=>{ if(confirm("Hapus cache hasil scan?")){ Object.keys(cache).forEach(k=>delete cache[k]); saveCache(); setStatus("cache dihapus.","b-warn"); } };
+  $("clearAll").onclick=()=>{ $("addrs").value=""; results=[]; $("outCard").style.display="none"; $("prog").value=0; setStatus("dibersihkan.","b-warn"); };
+  $("file").addEventListener("change",e=>{
+    const f=e.target.files[0]; if(!f) return;
+    const fr=new FileReader(); fr.onload=()=>{ $("addrs").value=String(fr.result||"").trim(); }; fr.readAsText(f);
+  });
+  $("list").addEventListener("click",e=>{
+    const b=e.target.closest("[data-copy]"); if(!b) return;
+    const r=results[Number(b.getAttribute("data-copy"))];
+    navigator.clipboard.writeText(block(r)).then(()=>{ const o=b.textContent; b.textContent="Tercopy ✓"; setTimeout(()=>b.textContent=o,1200); });
+  });
+  $("copySig").onclick=()=>{
+    const t=results.filter(hasSignal).map(block).join("\n\n");
+    if(!t) return alert("Tidak ada wallet dengan sinyal.");
+    navigator.clipboard.writeText(t).then(()=>alert("Tercopy: "+results.filter(hasSignal).length+" wallet."));
+  };
+  $("copyAll").onclick=()=>navigator.clipboard.writeText(results.map(block).join("\n\n")).then(()=>alert("Tercopy semua."));
+  $("csv").onclick=()=>{
+    const rows=[["address","platforms","functions","lp_v3","lp_v4","lp_clanker","bankr_token","bankr_claimable","source","verdict"]];
+    results.forEach(r=>{
+      const bt=r.bankr&&r.bankr.tokens.length?r.bankr.tokens.map(t=>t.sym).join("|"):"";
+      const bc=r.bankr&&r.bankr.tokens.length?r.bankr.tokens.map(t=>((t.claim&&t.claim.token0)||"0")+"WETH;"+((t.claim&&t.claim.token1)||"0")).join("|"):"";
+      rows.push([r.addr,r.platforms.join("|"),r.funcs.join("|"),(r.lp&&r.lp.v3)||0,(r.lp&&r.lp.v4)||0,(r.lp&&r.lp.clanker)||0,bt,bc,r.source,hasSignal(r)?"ADA":"tidak"]);
+    });
+    const csv=rows.map(r=>r.map(x=>'"'+String(x).replace(/"/g,'""')+'"').join(",")).join("\n");
+    const a=document.createElement("a");
+    a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));
+    a.download="launchpad-scan.csv"; document.body.appendChild(a); a.click(); a.remove();
+  };
+
+  setStatus("siap. isi Alchemy key (disarankan) lalu paste alamat.","b-ok");
 });
 </script>
 </body>
