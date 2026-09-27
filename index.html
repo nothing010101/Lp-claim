@@ -67,6 +67,7 @@
     </div>
     <div class="actions">
       <button class="btn btn-ghost" id="clearCache">Hapus cache</button>
+      <button class="btn btn-ghost" id="testBtn">🔌 Test koneksi RPC</button>
       <button class="btn btn-ghost" id="loadKoa">Muat daftar NFT KOA (sekali)</button>
       <span class="stat" id="koaState" style="margin-left:6px"></span>
     </div>
@@ -86,6 +87,7 @@
     </div>
     <progress id="prog" max="100" value="0" style="margin-top:10px"></progress>
     <div class="stat" id="status">siap.</div>
+    <div id="log" style="margin-top:10px;background:#0c1219;border:1px solid var(--line);border-radius:8px;padding:8px 10px;font:11.5px ui-monospace,monospace;max-height:180px;overflow:auto;color:#9fb3c8;white-space:pre-wrap"></div>
   </div>
 
   <div class="card" id="outCard" style="display:none">
@@ -110,7 +112,6 @@ const LS_F="fee3_cfg", LS_C="fee3_cache", LS_KOA="fee3_koa";
 /* ===== kontrak ===== */
 const APE3    ="0xb3bEa12AFC263318C16DC16DbFD5AB3A0261DABf";
 const KOA     ="0xe6FeDc87a1e2e3FA95E2E608ab571C70cd623b58"; // KOAToLockerV5
-const KOALOCK ==""; // placeholder
 const KOA_NFTLOCK="0xa619bbd896fc964293f35c0123e4831ac04cfbf4"; // NFTAutoLockerV5
 const GOPLUS  ="0x25c9c4b56e820e0dea438b145284f02d9ca9bd52"; // UniV3LPLocker
 const ZORA_WOW="0x997020E5F59cCB79C74D527Be492Cc610CB9fA2B"; // WowFactory (proxy)
@@ -175,8 +176,18 @@ $("etherscanKey").addEventListener("input",()=>{try{localStorage.setItem(LS_F,JS
 const pad=a=>a.toLowerCase().replace(/^0x/,"").padStart(64,"0");
 const hexN=b=>b.toString(16).padStart(64,"0");
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
-const rpcUrl=()=>{const k=$("alchemyKey").value.trim();return k?`https://base-mainnet.g.alchemy.com/v2/${k}`:"https://mainnet.base.org";};
+let rpcIdx=0;
+const PUB_RPC=["https://base-rpc.publicnode.com","https://mainnet.base.org","https://base.drpc.org","https://1rpc.io/base","https://base.meowrpc.com"];
+let RPC_LIST=PUB_RPC.slice();
+const rpcUrl=()=>RPC_LIST[rpcIdx%RPC_LIST.length];
+function refreshRpc(){const k=$("alchemyKey").value.trim();
+  RPC_LIST=k?[`https://base-mainnet.g.alchemy.com/v2/${k}`].concat(PUB_RPC):PUB_RPC.slice();
+  rpcIdx=0;}
 const setS=t=>{$("status").textContent=t;};
+function log(m){try{const el=$("log");el.textContent=("["+new Date().toLocaleTimeString()+"] "+m+"\n"+el.textContent).slice(0,8000);}catch(e){}
+  try{console.log("[feechecker]",m);}catch(e){}}
+window.addEventListener("error",e=>log("❌ ERROR: "+(e.message||e.error)));
+window.addEventListener("unhandledrejection",e=>log("❌ PROMISE: "+((e.reason&&(e.reason.message||e.reason))||"?")));
 const norm=x=>(x==null||x==="")?"0x":x;
 const W=h=>{const b=(h||"").slice(2),o=[];for(let i=0;i+64<=b.length;i+=64)o.push(b.slice(i,i+64));return o;};
 const A12=h=>{try{return h&&h.length>=66?"0x"+h.slice(-40):"";}catch(e){return"";}};
@@ -185,21 +196,28 @@ const SGN=x=>{const v=BigInt("0x"+x);return v>=(1n<<255n)?v-(1n<<256n):v;};
 function dstr(h){const w=W(h);if(w.length<2)return"?";const ln=Number(BigInt("0x"+w[1]));if(!ln||ln>200)return"?";
   let s="";for(let i=0;i<Math.ceil(ln/32);i++)s+=(w[2+i]||"");
   try{const m=s.match(/../g)||[];return m.map(c=>String.fromCharCode(parseInt(c,16))).join("").replace(/\0/g,"");}catch(e){return"?";}}
-async function fj(url,opts,tries=5){let last,w=700;
+async function fj(url,opts,tries=3){let last,w=500;
   for(let i=0;i<tries;i++){try{const r=await fetch(url,opts||undefined);
     if(r.status===429||r.status===503)last=new Error("HTTP "+r.status);
     else if(!r.ok)last=new Error("HTTP "+r.status);else return await r.json();
   }catch(e){last=e;}await sleep(w);w*=1.7;}
   throw last;}
-async function rb(calls,tag){
+async function rb(calls){
   if(!calls.length)return[];
   const out=[];
   for(let i=0;i<calls.length;i+=60){
     const ch=calls.slice(i,i+60);
-    const body=ch.map((c,j)=>({jsonrpc:"2.0",id:j,method:tag||"eth_call",params:[tag?c.to||c:[{to:c.to,data:c.data},"latest"]]}));
-    let arr=null;
-    try{const r=await fj(rpcUrl(),{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(body)});arr=Array.isArray(r)?r:[r];}
-    catch(e){arr=[];}
+    const body=ch.map((c,j)=>({jsonrpc:"2.0",id:j,method:"eth_call",params:[{to:c.to,data:c.data},"latest"]}));
+    let arr=null,lastErr=null;
+    for(let attempt=0;attempt<4;attempt++){
+      try{
+        const r=await fj(rpcUrl(),{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(body)},2);
+        arr=Array.isArray(r)?r:[r];
+        if(arr.length)break;
+      }catch(e){lastErr=e;}
+      rpcIdx++;await sleep(250);
+    }
+    if(!arr||!arr.length){log("⚠ RPC gagal utk batch "+i+" ("+ch.length+" call): "+((lastErr&&lastErr.message)||"kosong"));out.push(...new Array(ch.length).fill(null));continue;}
     const m={};arr.forEach(r=>{m[r.id]=(r.result!==undefined?r.result:null);});
     for(let j=0;j<ch.length;j++)out.push(m[j]!==undefined?m[j]:null);
   }
@@ -403,7 +421,7 @@ function claimables(r){
   if(r.koa&&r.koa.hits)r.koa.hits.forEach(h=>{
     if(h.fees){const z=(Number(h.fees.f0)/10**h.fees.dec0)+(Number(h.fees.f1)/10**h.fees.dec1);
       if(z>0)out.push(`KOA collectFees(${h.nft})  [fee ${(Number(h.fees.f0)/10**h.fees.dec0).toFixed(6)} ${h.fees.sym0}]${r.koa.split?"":" (splitting OFF)"}`);}});
-  if(r.zora&&r.zora.claimableWei!=="0")out.push(`Zora withdraw  [${(r.zora.claimableEth).toFixed(10)} ETH]`);
+  if(r.zora&&r.zora.claimableWei!=="0")out.push(`Zora ProtocolRewards.withdraw(alamatAnda, ${r.zora.claimableWei})  [${(r.zora.claimableEth).toFixed(10)} ETH]`);
   if(r.bankr&&r.bankr.tokens)r.bankr.tokens.forEach(t=>out.push(`Bankr claim ${t.sym}`));
   return out;
 }
@@ -442,7 +460,7 @@ function block(r){
       }else L.push("  • NFT #"+h.nft+"  lockId="+h.lockId+"  (fee tidak terbaca)");
     });
   }else if(r.koa&&r.koa.found) L.push("KOA      : —");
-  if(r.zora) L.push("Zora     : "+(r.zora.claimableWei==="0"?"—":(r.zora.claimableEth).toFixed(10)+" ETH claimable  → ProtocolRewards.withdraw("+r.addr.slice(0,10)+"…)"));
+  if(r.zora) L.push("Zora     : "+(r.zora.claimableWei==="0"?"—":(r.zora.claimableEth).toFixed(10)+" ETH claimable  → ProtocolRewards.withdraw(alamatAnda, jumlahWei)"));
   if(r.bankr&&r.bankr.tokens.length)r.bankr.tokens.forEach(t=>L.push("Bankr    : "+t.sym+" — "+((t.claim?.token0)||0)+" WETH + "+((t.claim?.token1)||0)+" "+t.sym));
   else L.push("Bankr    : —");
   const cl=claimables(r);
@@ -470,11 +488,17 @@ const parseAddrs=()=>[...new Set(($("addrs").value||"").split(/[\s,;]+/).map(s=>
 
 /* ===== run ===== */
 async function run(feeOnly){
-  const addrs=parseAddrs();if(!addrs.length)return alert("Belum ada alamat valid.");
+ try{
+  const addrs=parseAddrs();
+  if(!addrs.length){alert("Belum ada alamat valid (format 0x + 40 hex).");return;}
+  if(!$("alchemyKey").value.trim()&&!confirm("Alchemy key kosong.\n\nTanpa key, tool pakai RPC publik yang sering diblokir CORS → scan bisa gagal.\nLanjut tetap?"))return;
+  refreshRpc();
   stopped=false;results=[];$("list").innerHTML="";
   $("scan").disabled=$("scanFee").disabled=true;$("stopBtn").disabled=false;
   const force=$("force").checked,prog=$("prog");prog.value=0;prog.max=addrs.length;
-  await loadKoaTables();
+  setS("mulai… "+addrs.length+" alamat");
+  log("▶ START "+addrs.length+" alamat · feeOnly="+feeOnly+" · RPC="+rpcUrl().replace(/\/v2\/.*/,"/v2/***"));
+  try{await loadKoaTables();}catch(e){log("⚠ tabel KOA gagal dimuat: "+(e.message||e));}
   for(let i=0;i<addrs.length;i++){
     if(stopped){setS("dihentikan.");break;}
     const a=addrs[i];
@@ -492,15 +516,36 @@ async function run(feeOnly){
     await sleep(parseInt($("delay").value||"170",10));
   }
   saveC();render();
-  $("scan").disabled=$("scanFee").disabled=false;$("stopBtn").disabled=true;
-  setS("selesai.");
+  setS("selesai. "+results.length+" alamat diproses");
+  log("✔ SELESAI · "+results.filter(hasFee).length+" wallet bisa diklaim");
+ }catch(err){
+  log("❌ SCAN GAGAL: "+((err&&(err.stack||err.message))||err));
+  setS("GAGAL: "+((err&&err.message)||err));
+ }finally{
+  $("scan").disabled=false;$("scanFee").disabled=false;$("stopBtn").disabled=true;
+ }
 }
 $("scan").onclick=()=>run(false);
 $("scanFee").onclick=()=>run(true);
 $("stopBtn").onclick=()=>{stopped=true;};
 $("onlyFee").onchange=render;
 $("clearCache").onclick=()=>{if(confirm("Hapus cache hasil?")){Object.keys(cache).forEach(k=>delete cache[k]);saveC();setS("cache dihapus.");}};
-$("loadKoa").onclick=async()=>{koaTables=null;localStorage.removeItem(LS_KOA);await loadKoaTables();setS("tabel KOA dimuat.");};
+$("loadKoa").onclick=async()=>{try{
+  refreshRpc();koaTables=null;try{localStorage.removeItem(LS_KOA);}catch(e){}
+  await loadKoaTables();setS("tabel KOA dimuat.");log("✔ tabel KOA: "+(koaTables?koaTables.ids.length:0)+" NFT");
+}catch(e){log("❌ tabel KOA gagal: "+(e.message||e));setS("tabel KOA gagal");}};
+$("testBtn").onclick=async()=>{
+  refreshRpc();setS("tes koneksi…");
+  for(let i=0;i<RPC_LIST.length;i++){
+    const u=RPC_LIST[i];rpcIdx=i;
+    try{
+      const r=await fj(rpcUrl(),{method:"POST",headers:{"content-type":"application/json"},
+        body:JSON.stringify({jsonrpc:"2.0",id:1,method:"eth_blockNumber",params:[]})},2);
+      log("✔ "+u.replace(/\/v2\/.*/,"/v2/***")+" → block "+parseInt(r.result,16));
+    }catch(e){log("✖ "+u.replace(/\/v2\/.*/,"/v2/***")+" → "+((e&&e.message)||e));}
+  }
+  setS("tes koneksi selesai");
+};
 $("clearAll").onclick=()=>{$("addrs").value="";results=[];$("outCard").style.display="none";setS("dibersihkan.");};
 $("file").addEventListener("change",e=>{const f=e.target.files[0];if(!f)return;const fr=new FileReader();
   fr.onload=()=>{$("addrs").value=String(fr.result||"").trim();};fr.readAsText(f);});
