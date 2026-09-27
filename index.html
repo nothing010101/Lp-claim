@@ -3,88 +3,76 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Launchpad Interaction Scanner — Base</title>
+<title>Launchpad Scanner v2 + ApeStore V3 Fee Checker — Base</title>
 <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.4/dist/ethers.umd.min.js"></script>
-<script>if(!window.ethers){document.write('<script src="https://unpkg.com/ethers@6.13.4/dist/ethers.umd.min.js"><\/script>');}</script>
 <style>
   :root{--card:#131a22;--line:#22303f;--txt:#e7eef7;--mut:#8fa3b8;--acc:#3b82f6;--ok:#28c76f;--warn:#ffb020;--err:#ff5c5c}
   *{box-sizing:border-box}
   body{margin:0;background:linear-gradient(180deg,#070b10,#0b0f14 40%);color:var(--txt);font:15px/1.6 ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial;padding:16px}
-  .wrap{max-width:1000px;margin:0 auto}
-  h1{font-size:20px;margin:0 0 4px}
+  .wrap{max-width:1060px;margin:0 auto} h1{font-size:20px;margin:0 0 4px}
   .sub{color:var(--mut);font-size:13px;margin-bottom:14px}
   .card{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:16px;margin-bottom:14px}
   .card h2{font-size:12.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--mut);margin:0 0 10px}
   .warnbox{background:rgba(255,176,32,.08);border:1px solid rgba(255,176,32,.35);border-radius:10px;padding:12px;font-size:12.8px;color:#ffd489;margin-bottom:14px;line-height:1.55}
   textarea,input,select{width:100%;background:#0c1219;border:1px solid var(--line);color:var(--txt);border-radius:9px;padding:10px 12px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px}
-  textarea{min-height:120px;resize:vertical}
+  textarea{min-height:110px;resize:vertical}
   label{display:block;color:var(--mut);font-size:12.5px;margin:10px 0 5px}
-  .row{display:flex;gap:10px;flex-wrap:wrap}
-  .row>div{flex:1;min-width:190px}
+  .row{display:flex;gap:10px;flex-wrap:wrap}.row>div{flex:1;min-width:190px}
   .btn{appearance:none;border:none;border-radius:9px;padding:10px 14px;font-weight:700;font-size:13.5px;cursor:pointer}
   .btn:disabled{opacity:.45;cursor:not-allowed}
-  .btn-primary{background:var(--acc);color:#fff}
-  .btn-ok{background:#1f7a4d;color:#fff}
-  .btn-ghost{background:#1b2531;color:var(--txt);border:1px solid var(--line)}
-  .btn-danger{background:#7a1f1f;color:#fff}
+  .btn-primary{background:var(--acc);color:#fff}.btn-ok{background:#1f7a4d;color:#fff}
+  .btn-ghost{background:#1b2531;color:var(--txt);border:1px solid var(--line)}.btn-danger{background:#7a1f1f;color:#fff}
   .actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
-  .hint{color:var(--mut);font-size:11.8px;margin-top:-4px}
   progress{width:100%;height:10px;border-radius:6px}
   .wblock{background:#0e1116;border:1px solid var(--line);border-radius:11px;padding:13px;margin-bottom:11px}
-  .whead{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap}
   .waddr{font-family:ui-monospace,monospace;font-size:13px;word-break:break-all;font-weight:700}
-  pre.body{margin:8px 0 0;background:#0c1219;border:1px solid var(--line);border-radius:8px;padding:10px;font-family:ui-monospace,monospace;font-size:12px;white-space:pre-wrap;word-break:break-word;max-height:260px;overflow:auto}
+  pre.body{margin:8px 0 0;background:#0c1219;border:1px solid var(--line);border-radius:8px;padding:10px;font-family:ui-monospace,monospace;font-size:12px;white-space:pre-wrap;word-break:break-word;max-height:300px;overflow:auto}
   .badge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:700}
   .b-ok{background:rgba(40,199,111,.14);color:var(--ok);border:1px solid rgba(40,199,111,.35)}
   .b-mut{background:#1c2330;color:var(--mut);border:1px solid var(--line)}
+  .b-cash{background:rgba(120,180,255,.16);color:#8fc0ff;border:1px solid rgba(120,180,255,.4)}
   .mini{padding:5px 9px;font-size:11.5px;border-radius:6px}
-  #boot{position:fixed;inset:0;background:#070b10;display:flex;align-items:center;justify-content:center;z-index:99;color:var(--mut)}
-  .stat{font-size:13px;color:var(--mut);margin-top:8px}
-  .stat b{color:var(--txt)}
+  .stat{font-size:13px;color:var(--mut);margin-top:8px}.stat b{color:var(--txt)}
 </style>
 </head>
 <body>
-<div id="boot">memuat…</div>
 <div class="wrap">
-  <h1>Launchpad Interaction Scanner <span style="color:var(--mut)">— Base</span></h1>
-  <div class="sub">Cek: alamat mana yang pernah berinteraksi dengan launchpad / locker / LP NFT / Bankr.</div>
+  <h1>Launchpad Scanner <b>v2</b> + ApeStore V3 Fee Checker</h1>
+  <div class="sub">Base chain · jalan 100% di browser Anda</div>
 
   <div class="warnbox">
-    Semua berjalan <b>di browser Anda</b> (tanpa backend). Kunci API disimpan di <code>localStorage</code> browser ini dan hanya dikirim ke layanannya masing-masing.<br>
-    • <b>Sigma TIDAK dicek</b> (itu bot buy/sell Telegram, bukan launchpad).<br>
-    • Urutan sumber data: <b>Alchemy</b> → <b>Etherscan (chainid 8453)</b> → <b>Blockscout publik</b>.
+    <b>Perbaikan v2:</b><br>
+    1. 🐞 <b>Bug Clanker diperbaiki</b> — sebelumnya array kosong dihitung "ada" → 295 wallet salah ditandai. Sekarang panjang array dibaca.<br>
+    2. ✅ <b>ape.store V3</b> <code>0xb3bEa12AFC263318C16DC16DbFD5AB3A0261DABf</code> ditambahkan + <b>modul khusus</b>: kalau wallet Anda <i>liquidity owner</i>, tool menghitung fee yang bisa diklaim (dalam ETH).<br>
+    3. 🔑 Fungsi token terdeteksi: <code>deployToken 0x13d39311</code>, <code>collectFees 0xa480ca79</code>, <code>updateLiquidityOwner 0x89f3e76f</code>.
   </div>
 
   <div class="card">
     <h2>1 · Konfigurasi</h2>
     <div class="row">
-      <div><label>Alchemy API key (Base)</label><input id="alchemyKey" placeholder="isi key Alchemy" autocomplete="off" spellcheck="false"></div>
-      <div><label>Etherscan API key (V2)</label><input id="etherscanKey" placeholder="opsional" autocomplete="off" spellcheck="false"></div>
+      <div><label>Alchemy API key (Base) — disarankan</label><input id="alchemyKey" autocomplete="off" spellcheck="false" placeholder="isi key Alchemy"></div>
+      <div><label>Etherscan API key V2 — untuk kolom "fungsi"</label><input id="etherscanKey" autocomplete="off" spellcheck="false" placeholder="opsional"></div>
     </div>
-    <label>Kontrak tambahan (format: <code>0xalamat,Label</code> — satu per baris)</label>
-    <textarea id="extraReg" style="min-height:70px" placeholder="0x....,ape.store V3"></textarea>
-    <div class="row" style="margin-top:10px">
-      <div><label>Ukuran batch LP NFT (alamat/request)</label><input id="batchSize" value="25"></div>
-      <div><label>Jeda antar request (ms)</label><input id="delay" value="140"></div>
-      <div><label>&nbsp;</label>
-        <label style="margin:0;display:flex;align-items:center;gap:6px;color:var(--txt)"><input type="checkbox" id="force" style="width:auto;margin:0"> Paksa scan ulang (abaikan cache)</label>
-      </div>
+    <div class="row">
+      <div><label>Jeda request (ms)</label><input id="delay" value="160"></div>
+      <div><label>Batch LP NFT</label><input id="batchSize" value="25"></div>
+      <div><label>&nbsp;</label><label style="margin:0;display:flex;gap:6px;align-items:center;color:var(--txt)"><input type="checkbox" id="force" style="width:auto;margin:0"> paksa scan ulang</label></div>
     </div>
-    <div class="actions">
-      <button class="btn btn-ghost" id="clearCache">Hapus cache scan</button>
-    </div>
+    <label>Kontrak tambahan <code>0xalamat,Label</code></label>
+    <textarea id="extraReg" style="min-height:60px"></textarea>
+    <div class="actions"><button class="btn btn-ghost" id="clearCache">Hapus cache</button></div>
   </div>
 
   <div class="card">
     <h2>2 · Daftar alamat</h2>
-    <label>Paste alamat (satu per baris)</label>
     <textarea id="addrs" placeholder="0x...&#10;0x..."></textarea>
     <div class="row">
-      <div><label>Impor file (.txt/.csv)</label><input type="file" id="file" accept=".txt,.csv,text/plain"></div>
+      <div><label>Impor file .txt/.csv</label><input type="file" id="file" accept=".txt,.csv,text/plain"></div>
       <div><label>&nbsp;</label><div class="actions" style="margin-top:0"><button class="btn btn-danger" id="clearAll">Bersihkan</button></div></div>
     </div>
     <div class="actions">
-      <button class="btn btn-primary" id="scan">⟶ Scan</button>
+      <button class="btn btn-primary" id="scan">⟶ Scan Semua</button>
+      <button class="btn btn-ok" id="scanV3">⟶ Scan Fee ape.store V3 saja</button>
       <button class="btn btn-ghost" id="stopBtn" disabled>Stop</button>
     </div>
     <progress id="prog" max="100" value="0" style="margin-top:10px"></progress>
@@ -92,12 +80,13 @@
   </div>
 
   <div class="card" id="outCard" style="display:none">
-    <h2>3 · Hasil (per wallet, bisa copy sendiri)</h2>
+    <h2>3 · Hasil (per wallet, copy sendiri)</h2>
     <div class="actions" style="margin-bottom:8px">
       <button class="btn btn-ok" id="copySig">Copy Semua yang Ada Sinyal</button>
       <button class="btn btn-ghost" id="copyAll">Copy Semua</button>
       <button class="btn btn-ghost" id="csv">Export CSV</button>
-      <label style="margin:0;display:flex;align-items:center;gap:6px;color:var(--txt);font-size:13px"><input type="checkbox" id="onlySig" style="width:auto;margin:0"> Hanya tampilkan yang ada sinyal</label>
+      <label style="margin:0;display:flex;gap:6px;align-items:center;color:var(--txt);font-size:13px"><input type="checkbox" id="onlySig" style="width:auto;margin:0"> hanya yang ada sinyal</label>
+      <label style="margin:0;display:flex;gap:6px;align-items:center;color:var(--txt);font-size:13px"><input type="checkbox" id="onlyV3" style="width:auto;margin:0"> hanya yang punya fee V3</label>
     </div>
     <div class="stat" id="summary"></div>
     <div id="list" style="margin-top:12px"></div>
@@ -105,292 +94,352 @@
 </div>
 
 <script>
-document.addEventListener("DOMContentLoaded", () => {
-  const boot=document.getElementById("boot"); if(boot) boot.remove();
-  const $=id=>document.getElementById(id);
-  const LS_KEY="lpscan_cfg", LS_CACHE="lpscan_cache";
+(function(){
+const $=id=>document.getElementById(id);
+const LS_C="lpscan2_cache", LS_F="lpscan2_cfg";
+const V3C="0xb3bEa12AFC263318C16DC16DbFD5AB3A0261DABf";
+const V3PM="0x03a520b32C04BF3bEEf7BEb72E919cf822Ed34f1";
+const V4PM="0x7C5f5A4bBd8fD63184577525326123B519429bDc";
+const CLANKER="0xAa6e44bccd3Eb1310f2DA525772cF23E7Dc5Eb12";
+const FACT="0x33128a8fC17869897dcE68Ed026d694621f6FDfD";
+const WETH="0x4200000000000000000000000000000000000006";
+const CHAIN=8453, Q128=(1n<<128n);
 
-  /* ================= CONFIG ================= */
-  const CHAIN_ID=8453;
-  const V3PM="0x03a520b32C04BF3bEEf7BEb72E919cf822Ed34f1";
-  const V4PM="0x7C5f5A4bBd8fD63184577525326123B519429bDc";
-  const CLANKER="0xAa6e44bccd3Eb1310f2DA525772cF23E7Dc5Eb12";
+const REGISTRY={
+ "0xb3bea12afc263318c16dc16dbfd5ab3a0261dabf":"ape.store V3 ⭐",
+ "0x0bf8edd756ff6caf3f583d67a9fd8b237e40f58a":"ape.store V2",
+ "0x3ccc78545f675a188b7521f7f4b4791995752635":"ape.store curve",
+ "0x31c0282fa6d0a82ad22ab63bbacd87f62b2a9bfd":"Tribes launcher",
+ "0xff747d4cea4ed9c24334a77b0e4824e8ec9a6808":"Flaunch",
+ "0xf66dea7b3e897cd44a5a231c61b6b4423d613259":"Virtuals launcher",
+ "0xaa6e44bccd3eb1310f2da525772cf23e7dc5eb12":"Clanker locker",
+ "0x7a306c63a1ccc180cbf60fa2a92fbb31e16904f4":"beliefs.social",
+ "0x1111111111166b7fe7bd91427724b487980afc69":"Zora",
+ "0x7777777f279eba3d3ad8f4e708545291a6fdba8b":"Zora rewards",
+ "0xc5a076cad94176c2996b32d8466be1ce757faa27":"Mint Club bond",
+ "0x555555555a4161c1c0ba310fc1c993086d3de042":"StackMarket",
+ "0x4252827dc18e14ebbde7d9b4addc982703dfb15a":"LockerFactory",
+ "0xa82685520c463a752d5319e6616e4e5fd0215e33":"TokenVesting"
+};
+// selector -> fungsi (Sigma sengaja TIDAK ada)
+const SEL={
+ "0x13d39311":"deployToken","0xa480ca79":"collectFees","0x89f3e76f":"updateLiquidityOwner",
+ "0x4d8b653c":"sellPresale","0xdd68a83a":"buyPresale","0x2cd42262":"createAndBuy","0x40ffae2e":"create",
+ "0x6c025572":"buy","0x3581f5bb":"sell","0xede66976":"fairLaunch","0x86d1a69f":"release",
+ "0x51cff8d9":"withdraw","0x1e83409a":"claim","0xfc6f7865":"collect(NFT)","0x88316456":"mint(NFT)",
+ "0xadc9772e":"stake","0x2e1a7d4d":"unwrap","0x0c89a0df":"transferTokens"
+};
+const FUNC_WORDS=["deployToken","collectFees","updateLiquidityOwner","sellPresale","buyPresale","createAndBuy","create",
+ "fairLaunch","release","stake","claim","withdraw","buy","sell","launch"];
 
-  const REGISTRY={
-    "0x31c0282fa6d0a82ad22ab63bbacd87f62b2a9bfd":"Tribes launcher",
-    "0x0bf8edd756ff6caf3f583d67a9fd8b237e40f58a":"ape.store",
-    "0x3ccc78545f675a188b7521f7f4b4791995752635":"ape.store curve",
-    "0xff747d4cea4ed9c24334a77b0e4824e8ec9a6808":"Flaunch",
-    "0xf66dea7b3e897cd44a5a231c61b6b4423d613259":"Virtuals launcher",
-    "0xaa6e44bccd3eb1310f2da525772cf23e7dc5eb12":"Clanker locker",
-    "0x7a306c63a1ccc180cbf60fa2a92fbb31e16904f4":"beliefs.social",
-    "0x1111111111166b7fe7bd91427724b487980afc69":"Zora",
-    "0x7777777f279eba3d3ad8f4e708545291a6fdba8b":"Zora rewards",
-    "0xc5a076cad94176c2996b32d8466be1ce757faa27":"Mint Club bond",
-    "0x555555555a4161c1c0ba310fc1c993086d3de042":"StackMarket",
-    "0x4252827dc18e14ebbde7d9b4addc982703dfb15a":"LockerFactory",
-    "0xa82685520c463a752d5319e6616e4e5fd0215e33":"TokenVesting",
-    "0x03a520b32c04bf3beef7beb72e919cf822ed34f1":"UniV3 PositionManager",
-    "0x7c5f5a4bbd8fd63184577525326123b519429bdc":"UniV4 PositionManager",
-    "0x2626664c2603336e57b271c5c0b26f421741e481":"UniV3 SwapRouter"
-  };
-  const SEL={
-    "0x4d8b653c":"sellPresale","0xdd68a83a":"buyPresale","0x2cd42262":"createAndBuy",
-    "0x40ffae2e":"create","0x6c025572":"buy","0x3581f5bb":"sell","0xede66976":"fairLaunch",
-    "0xa033fcd4":"collectFees","0xa480ca79":"collectFees","0xb17acdcd":"collectFees",
-    "0x86d1a69f":"release","0x51cff8d9":"withdraw","0x1e83409a":"claim",
-    "0xfc6f7865":"collect(NFT)","0x641070f7":"launch(Tribes)","0xbc63329d":"createToken(beliefs)",
-    "0xadc9772e":"stake","0x2e1a7d4d":"unwrap","0x9f9471d3":"+","0x74be850c":"+"
-  };
-  const FUNC_ONLY=["launch","fairLaunch","createAndBuy","create","deployToken","collectFees","release","sellPresale","buyPresale","stake","claim","withdraw","buy","sell"];
+let results=[], stopped=false;
+const cache=(()=>{try{return JSON.parse(localStorage.getItem(LS_C)||"{}")}catch(e){return {}}})();
+const saveCache=()=>{try{localStorage.setItem(LS_C,JSON.stringify(cache))}catch(e){}};
+try{const c=JSON.parse(localStorage.getItem(LS_F)||"{}");
+  if(c.a)$("alchemyKey").value=c.a; if(c.e)$("etherscanKey").value=c.e; if(c.x)$("extraReg").value=c.x;}catch(e){}
+const saveF=()=>{try{localStorage.setItem(LS_F,JSON.stringify({a:$("alchemyKey").value.trim(),e:$("etherscanKey").value.trim(),x:$("extraReg").value}))}catch(e){}};
+["alchemyKey","etherscanKey","extraReg"].forEach(i=>$(i).addEventListener("input",saveF));
 
-  let results=[], stopped=false;
+/* ---------- util ---------- */
+const pad=a=>a.toLowerCase().replace(/^0x/,"").padStart(64,"0");
+const hexN=(b)=>b.toString(16).padStart(64,"0");
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const rpcUrl=()=>{const k=$("alchemyKey").value.trim();return k?`https://base-mainnet.g.alchemy.com/v2/${k}`:"https://mainnet.base.org";};
+const setS=(t)=>{$("status").textContent=t;};
+function registry(){const r={...REGISTRY};
+  ($("extraReg").value||"").split(/\r?\n/).forEach(l=>{const[a,n]=l.split(",").map(s=>(s||"").trim());
+    if(a&&/^0x[0-9a-fA-F]{40}$/.test(a))r[a.toLowerCase()]=n||"custom";});return r;}
+async function fj(url,opts,tries=4){let last,w=700;
+  for(let i=0;i<tries;i++){try{const r=await fetch(url,opts||undefined);
+      if(r.status===429||r.status===503)last=new Error("HTTP "+r.status);
+      else if(!r.ok)last=new Error("HTTP "+r.status); else return await r.json();}catch(e){last=e;}
+    await sleep(w);w*=1.8;} throw last;}
+async function rpcBatch(calls){ // [{to,data}]
+  if(!calls.length)return[];
+  const body=calls.map((c,i)=>({jsonrpc:"2.0",id:i,method:"eth_call",params:[{to:c.to,data:c.data},c.tag||"latest"]}));
+  const out=await fj(rpcUrl(),{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(body)});
+  const arr=Array.isArray(out)?out:[out]; const m={};
+  arr.forEach(r=>{m[r.id]=(r.result!==undefined?r.result:null);});
+  return calls.map((_,i)=>m[i]!==undefined?m[i]:null);
+}
+async function rpcOne(method,params){const d=await fj(rpcUrl(),{method:"POST",headers:{"content-type":"application/json"},
+  body:JSON.stringify({jsonrpc:"2.0",id:1,method,params})});return d.result;}
+const U=(h)=>{try{return h&&h!=="0x"?BigInt(h):0n;}catch(e){return 0n;}};
+const A12=(h)=>{try{return h&&h.length>=66?"0x"+h.slice(-40):"";}catch(e){return"";}};
+const wOf=h=>{const b=(h||"").slice(2);const o=[];for(let i=0;i+64<=b.length;i+=64)o.push(b.slice(i,i+64));return o;};
+function decStr(h){const w=wOf(h);if(w.length<2)return"?";const ln=Number(BigInt("0x"+w[1]));
+  let s="";for(let i=0;i<Math.ceil(ln/32);i++){const c=w[2+i]||"";s+=c;}return (s.match(/../g)||[]).map(x=>String.fromCharCode(parseInt(x,16))).join("").replace(/\0/g,"");}
+function norm(x){return (x==="0x"||x==null||x==="")?"0x":x;}
 
-  const cache=JSON.parse(localStorage.getItem(LS_CACHE)||"{}");
-  const saveCache=()=>{ try{localStorage.setItem(LS_CACHE,JSON.stringify(cache));}catch(e){} };
+/* ---------- riwayat tx ---------- */
+async function txAlchemy(a){
+  const k=$("alchemyKey").value.trim(); if(!k)throw new Error("no alch");
+  const body=[
+   {jsonrpc:"2.0",id:0,method:"alchemy_getAssetTransfers",params:[{fromBlock:"0x0",toBlock:"latest",fromAddress:a,category:["external","erc20","erc721"],maxCount:"0x3e8",order:"desc",excludeZeroValue:false,withMetadata:false}]},
+   {jsonrpc:"2.0",id:1,method:"alchemy_getAssetTransfers",params:[{fromBlock:"0x0",toBlock:"latest",fromAddress:a,toAddress:V3C,category:["external"],maxCount:"0x3e8",order:"desc",withMetadata:false}]}];
+  const out=await fj(rpcUrl(),{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(body)});
+  const arr=Array.isArray(out)?out:[out]; const txs=[],hashes=[];
+  arr.forEach(r=>{((r.result&&r.result.transfers)||[]).forEach(t=>{
+    if(r.id===0)txs.push({to:(t.to||"").toLowerCase(),fn:"",hash:t.hash,raw:"",cat:t.category});
+    else hashes.push(t.hash);});});
+  return {source:"alchemy",txs,v3hashes:hashes};
+}
+async function txEtherscan(a){
+  const k=$("etherscanKey").value.trim(); if(!k)throw new Error("no es");
+  const d=await fj(`https://api.etherscan.io/v2/api?chainid=${CHAIN}&module=account&action=txlist&address=${a}&page=1&offset=300&sort=desc&apikey=${k}`);
+  if(!Array.isArray(d.result))throw new Error(d.result||"err");
+  return {source:"etherscan",v3hashes:null,txs:d.result.map(t=>{
+    const input=(t.input||"").toLowerCase(); const sel=input.slice(0,10);
+    let fn=t.functionName?t.functionName.split("(")[0]:(SEL[sel]||"");
+    return {to:(t.to||"").toLowerCase(),fn,hash:t.hash,raw:input,contract:(t.contractAddress||"").toLowerCase()};})};
+}
+async function txBlockscout(a){
+  const d=await fj(`https://base.blockscout.com/api/v2/addresses/${a}/transactions`);
+  return {source:"blockscout",v3hashes:null,txs:(d.items||[]).map(t=>{
+    const input=((t.raw_input||t.input)||"").toLowerCase(); const sel=input.slice(0,10);
+    return {to:((t.to||{}).hash||"").toLowerCase(),fn:(t.method||SEL[sel]||""),hash:t.hash,raw:input,
+            contract:((t.created_contract||{}).hash||"").toLowerCase()};})};
+}
+async function getTx(a){for(const f of [txEtherscan,txBlockscout,txAlchemy]){try{const r=await f(a);if(r&&r.txs)return r;}catch(e){}}return{source:"none",txs:[],v3hashes:[]};}
 
-  try{
-    const c=JSON.parse(localStorage.getItem(LS_KEY)||"{}");
-    if(c.alchemy) $("alchemyKey").value=c.alchemy;
-    if(c.etherscan) $("etherscanKey").value=c.etherscan;
-    if(c.extra) $("extraReg").value=c.extra;
-  }catch(e){}
-  const saveCfg=()=>{ try{localStorage.setItem(LS_KEY,JSON.stringify({alchemy:$("alchemyKey").value.trim(),etherscan:$("etherscanKey").value.trim(),extra:$("extraReg").value}));}catch(e){} };
-  ["alchemyKey","etherscanKey","extraReg"].forEach(id=>$(id).addEventListener("input",saveCfg));
+async function scanOne(a){
+  const reg=registry(), t=await getTx(a);
+  const platforms=new Set(), funcs=new Set(), v3deploys=[];
+  (t.txs||[]).forEach(x=>{
+    if(reg[x.to])platforms.add(reg[x.to]);
+    if(x.to===V3C.toLowerCase()&&(x.raw||"").startsWith("0x13d39311")) v3deploys.push(x.hash);
+    if(x.fn&&FUNC_WORDS.some(f=>x.fn.toLowerCase().startsWith(f.toLowerCase())))funcs.add(x.fn.split("(")[0]);
+    if(x.contract&&reg[x.contract])platforms.add(reg[x.contract]+" (deploy)");
+  });
+  if((t.v3hashes||[]).length&&!v3deploys.length) (t.v3hashes||[]).forEach(h=>v3deploys.push(h));
+  return {addr:a,source:t.source,platforms:[...platforms],funcs:[...funcs],lp:{},bankr:null,v3:null,_v3hashes:v3deploys};
+}
 
-  function registry(){
-    const r={...REGISTRY};
-    ($("extraReg").value||"").split(/\r?\n/).forEach(l=>{
-      const [a,name]=l.split(",").map(s=>(s||"").trim());
-      if(a && /^0x[0-9a-fA-F]{40}$/.test(a)) r[a.toLowerCase()]=name||"custom";
-    });
-    return r;
+/* ---------- LP NFT (FIXED: baca panjang array) ---------- */
+async function lpBatch(list){
+  const size=Math.max(1,parseInt($("batchSize").value||"25",10));
+  for(let i=0;i<list.length;i+=size){
+    if(stopped)break;
+    const ch=list.slice(i,i+size), calls=[];
+    ch.forEach(r=>{calls.push({to:V3PM,data:"0x70a08231"+pad(r.addr)});
+                   calls.push({to:V4PM,data:"0x70a08231"+pad(r.addr)});
+                   calls.push({to:CLANKER,data:"0xcd8852f0"+pad(r.addr)});});
+    let res=null; try{res=await rpcBatch(calls);}catch(e){res=new Array(calls.length).fill(null);}
+    ch.forEach((r,ix)=>{const g=j=>norm(res[ix*3+j]);
+      const num=v=>{try{return v&&v!=="0x"?Number(BigInt(v)):0;}catch(e){return 0;}};
+      let cl=0;
+      // FIX: getLpTokenIdsForUser -> uint256[] ; baca length (word ke-2)
+      const raw=res[ix*3+2];
+      if(raw&&raw!=="0x"){const w=wOf(raw); if(w.length>=2){try{cl=Number(BigInt("0x"+w[1]));}catch(e){cl=0;}}}
+      r.lp={v3:num(g(0)),v4:num(g(1)),clanker:cl};});
+    await sleep(parseInt($("delay").value||"160",10));
   }
+}
 
-  const pad=a=>a.toLowerCase().replace(/^0x/,"").padStart(64,"0");
-  const rpcUrl=()=>{ const k=$("alchemyKey").value.trim(); return k?`https://base-mainnet.g.alchemy.com/v2/${k}`:"https://mainnet.base.org"; };
-  const sleep=ms=>new Promise(r=>setTimeout(r,ms));
-  const setStatus=(t,cls)=>{ $("status").innerHTML=(cls?`<span class="badge ${cls}">${cls==="b-ok"?"ok":cls==="b-warn"?"info":"error"}</span> `:"")+t; };
+/* ---------- Bankr ---------- */
+async function bankrCheck(r){try{
+  const d=await fj(`https://api.bankr.bot/public/doppler/creator-fees/${r.addr}?days=30`,null,2);
+  if(d&&d.tokens&&d.tokens.length)r.bankr={tokens:d.tokens.map(t=>({sym:t.symbol,claim:t.claimable}))};
+}catch(e){}}
 
-  async function fetchJson(url, opts=null, tries=4){
-    let wait=600,last;
-    for(let i=0;i<tries;i++){
-      try{
-        const res=await fetch(url,opts||undefined);
-        if(res.status===429||res.status===503){ last=new Error("HTTP "+res.status); }
-        else if(!res.ok){ last=new Error("HTTP "+res.status); }
-        else return await res.json();
-      }catch(e){ last=e; }
-      await sleep(wait); wait*=2;
-    }
-    throw last||new Error("gagal");
+/* ---------- ape.store V3 fee ---------- */
+async function v3ReceiptToken(hash){
+  const r=await rpcOne("eth_getTransactionReceipt",[hash]);
+  if(!r||!r.logs)return null;
+  const MINT="0x"+"0".repeat(64);
+  for(const lg of r.logs){const t=lg.topics||[];
+    if(t.length===3&&t[1]===MINT)return lg.address.toLowerCase();}
+  return null;
+}
+async function v3TokenInfo(token){
+  const r=await rpcBatch([{to:V3C,data:"0xe4860339"+pad(token)}]);
+  const res=norm(r[0]); if(res==="0x")return null;
+  const w=wOf(res); if(w.length<2)return null;
+  return {lpId:Number(BigInt("0x"+w[0])), owner:A12("0x"+w[1])};
+}
+async function pendingFees(lpId){
+  const r1=norm((await rpcBatch([{to:V3PM,data:"0x99fbab88"+pad(hexN(BigInt(lpId)))}]))[0]);
+  if(r1==="0x")return null;
+  const w=wOf(r1); if(w.length<12)return null;
+  const t0=A12("0x"+w[2]),t1=A12("0x"+w[3]),fee=Number(BigInt("0x"+w[4]));
+  const sg=x=>{const v=BigInt("0x"+x);return v>=(1n<<255n)?v-(1n<<256n):v;};
+  const tl=sg(w[5]),tu=sg(w[6]),liq=BigInt("0x"+w[7]);
+  const fg0l=BigInt("0x"+w[8]),fg1l=BigInt("0x"+w[9]);
+  const c2=await rpcBatch([{to:FACT,data:"0x1698ee82"+"0".repeat(24)+t0.slice(2)+"0".repeat(24)+t1.slice(2)+hexN(BigInt(fee))}]);
+  const pool=A12(norm(c2[0])); if(!pool)return null;
+  const c3=await rpcBatch([
+    {to:pool,data:"0x3850c7bd"},{to:pool,data:"0xf3058399"},{to:pool,data:"0x46141319"},
+    {to:pool,data:"0xf30dba93"+pad(hexN(tl<(1n<<255n)?tl:tl+(1n<<256n)))},
+    {to:pool,data:"0xf30dba93"+pad(hexN(tu<(1n<<255n)?tu:tu+(1n<<256n)))},
+    {to:t0,data:"0x95d89b41"},{to:t0,data:"0x313ce567"},{to:t1,data:"0x95d89b41"},{to:t1,data:"0x313ce567"},
+    {to:t0,data:"0x70a08231"+pad(pool)},{to:t1,data:"0x70a08231"+pad(pool)}]);
+  const slot=wOf(norm(c3[0])); const tick=sg(slot[1]);
+  const gg0=U(c3[1]),gg1=U(c3[2]);
+  const lo=wOf(norm(c3[3])),up=wOf(norm(c3[4]));
+  const l0=BigInt("0x"+lo[2]),l1=BigInt("0x"+lo[3]),u0=BigInt("0x"+up[2]),u1=BigInt("0x"+up[3]);
+  const MOD=1n<<256n, sub=(a,b)=>((a-b)%MOD+MOD)%MOD;
+  let fi0,fi1;
+  if(tick<tl){fi0=sub(l0,gg0);fi1=sub(l1,gg1);}
+  else if(tick<tu){fi0=sub(gg0,l0);fi1=sub(gg1,l1);}
+  else {fi0=sub(u0,gg0);fi1=sub(u1,gg1);}
+  const f0=liq*sub(fi0,fg0l)/Q128, f1=liq*sub(fi1,fg1l)/Q128;
+  const d0=Number(BigInt("0x"+((c3[6]!=="0x"?word0(c3[6]):"0"))))||18;
+  const d1=Number(BigInt("0x"+((c3[8]!=="0x"?word0(c3[8]):"0"))))||18;
+  const sym0=decStr(norm(c3[5]))||"?", sym1=decStr(norm(c3[7]))||"?";
+  const b0=U(c3[9]),b1=U(c3[10]);
+  return {lpId,pool,tick,liq,f0,f1,d0,d1,sym0,sym1,t0,t1,
+          price:(b0>0n&&b1>0n)?(Number(b1)/10**d1)/(Number(b0)/10**d0):0};
+}
+const word0=h=>{try{return wOf(h)[0]||"0";}catch(e){return"0";}};
+async function v3Check(r){
+  const hashes=(r._v3hashes||[]).slice(0,60);
+  if(!hashes.length){r.v3={found:false,deploys:0,tokens:[]};return;}
+  const tokens=new Set();
+  for(const h of hashes){
+    let tk=null;
+    try{tk=await v3ReceiptToken(h);}catch(e){}
+    if(tk)tokens.add(tk);
+    await sleep(60);
+    if(stopped)break;
   }
-
-  async function rpcBatch(calls){
-    const body=calls.map((c,i)=>({jsonrpc:"2.0",id:i,method:"eth_call",params:[{to:c.to,data:c.data},"latest"]}));
-    const out=await fetchJson(rpcUrl(),{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(body)});
-    const arr=Array.isArray(out)?out:[out];
-    const map={}; arr.forEach(r=>{ map[r.id]=r.result!==undefined?r.result:null; });
-    return calls.map((c,i)=>map[i]!==undefined?map[i]:null);
-  }
-
-  async function txAlchemy(addr){
-    const k=$("alchemyKey").value.trim(); if(!k) throw new Error("no alchemy");
-    const body=[
-      {jsonrpc:"2.0",id:0,method:"alchemy_getAssetTransfers",params:[{fromBlock:"0x0",toBlock:"latest",fromAddress:addr,category:["external","erc20","erc721"],maxCount:"0x3e8",order:"desc",excludeZeroValue:false,withMetadata:false}]},
-      {jsonrpc:"2.0",id:1,method:"alchemy_getAssetTransfers",params:[{fromBlock:"0x0",toBlock:"latest",toAddress:addr,category:["erc721"],maxCount:"0x3e8",order:"desc",excludeZeroValue:false,withMetadata:false}]}
-    ];
-    const out=await fetchJson(rpcUrl(),{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(body)});
-    const arr=Array.isArray(out)?out:[out];
-    const res={out:[],in721:[]};
-    arr.forEach(r=>{
-      const list=(r.result&&r.result.transfers)||[];
-      list.forEach(t=>{
-        const to=(t.to||"").toLowerCase();
-        if(r.id===0) res.out.push({to, from:(t.from||"").toLowerCase(), cat:t.category, hash:t.hash});
-        else res.in721.push({to, from:(t.from||"").toLowerCase(), raw:(t.rawContract||{}).address, hash:t.hash});
-      });
-    });
-    return {source:"alchemy", txs:res.out, in721:res.in721};
-  }
-  async function txEtherscan(addr){
-    const k=$("etherscanKey").value.trim(); if(!k) throw new Error("no etherscan");
-    const u=`https://api.etherscan.io/v2/api?chainid=${CHAIN_ID}&module=account&action=txlist&address=${addr}&page=1&offset=200&sort=desc&apikey=${k}`;
-    const d=await fetchJson(u);
-    if(!Array.isArray(d.result)) throw new Error(d.result||d.message||"err");
-    return {source:"etherscan", txs:d.result.map(t=>{
-      const to=(t.to||"").toLowerCase();
-      let fn="";
-      if(t.functionName) fn=t.functionName.split("(")[0];
-      else if(t.input && t.input.length>=10) fn=SEL[t.input.slice(0,10)]||"";
-      return {to, from:(t.from||"").toLowerCase(), fn, hash:t.hash, contract:(t.contractAddress||"").toLowerCase()};
-    }), in721:[]};
-  }
-  async function txBlockscout(addr){
-    const d=await fetchJson(`https://base.blockscout.com/api/v2/addresses/${addr}/transactions`);
-    const items=d.items||[];
-    return {source:"blockscout", txs:items.map(t=>{
-      const to=((t.to||{}).hash||"").toLowerCase();
-      return {to, from:((t.from||{}).hash||"").toLowerCase(), fn:(t.method||""), hash:t.hash, contract:((t.created_contract||{}).hash||"").toLowerCase()};
-    }), in721:[]};
-  }
-  async function getTx(addr){
-    for(const f of [txAlchemy,txEtherscan,txBlockscout]){
-      try{ const r=await f(addr); if(r && r.txs) return r; }catch(e){}
-    }
-    return {source:"none", txs:[], in721:[]};
-  }
-
-  async function scanOne(addr){
-    const reg=registry();
-    const t=await getTx(addr);
-    const platforms=new Set(), funcs=new Set();
-    (t.txs||[]).forEach(x=>{
-      const p=reg[x.to]; if(p){ platforms.add(p); }
-      if(x.fn && FUNC_ONLY.some(f=>x.fn.toLowerCase().startsWith(f.toLowerCase()))) funcs.add(x.fn.split("(")[0]);
-      if(x.contract){ const cp=reg[x.contract]; if(cp) platforms.add(cp+" (deploy)"); }
-    });
-    return {addr, source:t.source, platforms:[...platforms], funcs:[...funcs], in721:(t.in721||[]).length, lp:{}, bankr:null};
-  }
-
-  async function lpBatch(list){
-    const size=Math.max(1,parseInt($("batchSize").value||"25",10));
-    for(let i=0;i<list.length;i+=size){
-      const chunk=list.slice(i,i+size);
-      const calls=[];
-      chunk.forEach(r=>{
-        calls.push({to:V3PM,data:"0x70a08231"+pad(r.addr)});
-        calls.push({to:V4PM,data:"0x70a08231"+pad(r.addr)});
-        calls.push({to:CLANKER,data:"0xcd8852f0"+pad(r.addr)});
-      });
-      let res=null;
-      try{ res=await rpcBatch(calls); }catch(e){ res=new Array(calls.length).fill(null); }
-      chunk.forEach((r,idx)=>{
-        const g=j=>res[idx*3+j];
-        const num=v=>{ try{return v&&v!=="0x"?parseInt(v,16):0;}catch(e){return 0;} };
-        r.lp={v3:num(g(0)), v4:num(g(1)), clanker:(g(2)&&g(2)!=="0x"?1:0)};
-      });
-      await sleep(parseInt($("delay").value||"140",10));
-      if(stopped) break;
-    }
-  }
-
-  async function bankrCheck(r){
+  const list=[];
+  for(const tk of tokens){
     try{
-      const d=await fetchJson(`https://api.bankr.bot/public/doppler/creator-fees/${r.addr}?days=30`,null,2);
-      if(d && d.tokens && d.tokens.length){
-        r.bankr={tokens:d.tokens.map(t=>({sym:t.symbol,addr:t.tokenAddress,claim:t.claimable})), totals:d.totals||null};
+      const info=await v3TokenInfo(tk);
+      if(!info)continue;
+      const mine=info.owner.toLowerCase()===r.addr.toLowerCase();
+      const rec={token:tk,owner:info.owner,lpId:info.lpId,mine,unclaimed:null};
+      if(mine&&info.lpId){
+        const pf=await pendingFees(info.lpId);
+        if(pf){rec.unclaimed=pf;
+          rec.claimEth=(pf.sym0.toLowerCase()==="weth"||pf.t0.toLowerCase()===WETH.toLowerCase())
+            ? Number(pf.f0)/10**pf.d0 : Number(pf.f0)/10**pf.d0*pf.price;}
       }
+      list.push(rec);
     }catch(e){}
+    await sleep(120);
+    if(stopped)break;
   }
+  r.v3={found:true,deploys:hashes.length,tokens:list};
+}
 
-  function hasSignal(r){ return r.platforms.length>0 || Object.values(r.lp||{}).some(v=>v>0) || (r.bankr&&r.bankr.tokens.length); }
-  function block(r){
-    const lines=[];
-    lines.push("WALLET  "+r.addr);
-    lines.push("platform : "+(r.platforms.length?r.platforms.join(", "):"—"));
-    lines.push("fungsi   : "+(r.funcs.length?r.funcs.join(", "):"—"));
-    lines.push("LP NFT   : V3="+((r.lp&&r.lp.v3)||0)+"  V4="+((r.lp&&r.lp.v4)||0)+"  Clanker="+((r.lp&&r.lp.clanker)||0));
-    if(r.bankr && r.bankr.tokens.length){
-      r.bankr.tokens.forEach(t=>{
-        const c=t.claim||{};
-        lines.push("Bankr    : "+t.sym+" — claimable "+((c.token0)||"0")+" WETH + "+((c.token1)||"0")+" "+t.sym);
-      });
-    } else lines.push("Bankr    : —");
-    lines.push("sumber   : "+r.source);
-    lines.push("verdict  : "+(hasSignal(r)?"ADA SINYAL":"tidak ada"));
-    return lines.join("\n");
-  }
-  function render(){
-    const only=$("onlySig").checked;
-    const rows=results.filter(r=>!only||hasSignal(r));
-    $("outCard").style.display="block";
-    const sig=results.filter(hasSignal).length;
-    $("summary").innerHTML=`total: <b>${results.length}</b> · ada sinyal: <b>${sig}</b> · tanpa sinyal: <b>${results.length-sig}</b> · tampil: <b>${rows.length}</b>`;
-    $("list").innerHTML=rows.map((r,i)=>
-      '<div class="wblock" data-i="'+results.indexOf(r)+'">'+
-        '<div class="whead"><span class="waddr">'+r.addr+'</span>'+
-        (hasSignal(r)?'<span class="badge b-ok">ADA SINYAL</span>':'<span class="badge b-mut">tidak ada</span>')+'</div>'+
-        '<pre class="body">'+block(r).replace(/[<>&]/g,c=>({"<":"&lt;",">":"&gt;","&":"&amp;"}[c]))+'</pre>'+
-        '<div class="actions"><button class="btn btn-ok mini" data-copy="'+results.indexOf(r)+'">Copy</button></div>'+
-      '</div>').join("");
-  }
-
-  function parseAddrs(){
-    return [...new Set(($("addrs").value||"").split(/[\s,;]+/).map(s=>s.trim().toLowerCase()).filter(s=>/^0x[0-9a-f]{40}$/.test(s)))];
-  }
-
-  async function run(){
-    const addrs=parseAddrs();
-    if(!addrs.length) return alert("Belum ada alamat valid.");
-    stopped=false; results=[];
-    $("outCard").style.display="block"; $("list").innerHTML="";
-    $("scan").disabled=true; $("stopBtn").disabled=false;
-    const force=$("force").checked;
-    const prog=$("prog"); prog.value=0; prog.max=addrs.length;
-    const srcCount={};
-    for(let i=0;i<addrs.length;i++){
-      if(stopped){ setStatus("dihentikan oleh pengguna.","b-warn"); break; }
-      const a=addrs[i];
-      let r=null;
-      if(!force && cache[a] && cache[a].addr){ r=cache[a]; }
-      else { r=await scanOne(a); if(r) r.fresh=true; }
-      results.push(r);
-      srcCount[r.source]=(srcCount[r.source]||0)+1;
-      prog.value=i+1;
-      setStatus(`${i+1}/${addrs.length} — sumber: ${r.source}`, "b-warn");
-      if(i%10===0) render();
-      await sleep(parseInt($("delay").value||"140",10));
-    }
-    await lpBatch(results);
-    for(let i=0;i<results.length;i++){
-      if(stopped) break;
-      await bankrCheck(results[i]);
-      if(i%10===0) render();
-      await sleep(60);
-    }
-    results.forEach(r=>{ const {fresh,...c}=r; cache[r.addr]=c; });
-    saveCache();
-    render();
-    $("scan").disabled=false; $("stopBtn").disabled=true;
-    setStatus("selesai. sumber: "+Object.entries(srcCount).map(([k,v])=>k+"="+v).join(", "),"b-ok");
-  }
-
-  $("scan").onclick=run;
-  $("stopBtn").onclick=()=>{ stopped=true; };
-  $("onlySig").onchange=render;
-  $("clearCache").onclick=()=>{ if(confirm("Hapus cache hasil scan?")){ Object.keys(cache).forEach(k=>delete cache[k]); saveCache(); setStatus("cache dihapus.","b-warn"); } };
-  $("clearAll").onclick=()=>{ $("addrs").value=""; results=[]; $("outCard").style.display="none"; $("prog").value=0; setStatus("dibersihkan.","b-warn"); };
-  $("file").addEventListener("change",e=>{
-    const f=e.target.files[0]; if(!f) return;
-    const fr=new FileReader(); fr.onload=()=>{ $("addrs").value=String(fr.result||"").trim(); }; fr.readAsText(f);
-  });
-  $("list").addEventListener("click",e=>{
-    const b=e.target.closest("[data-copy]"); if(!b) return;
-    const r=results[Number(b.getAttribute("data-copy"))];
-    navigator.clipboard.writeText(block(r)).then(()=>{ const o=b.textContent; b.textContent="Tercopy ✓"; setTimeout(()=>b.textContent=o,1200); });
-  });
-  $("copySig").onclick=()=>{
-    const t=results.filter(hasSignal).map(block).join("\n\n");
-    if(!t) return alert("Tidak ada wallet dengan sinyal.");
-    navigator.clipboard.writeText(t).then(()=>alert("Tercopy: "+results.filter(hasSignal).length+" wallet."));
-  };
-  $("copyAll").onclick=()=>navigator.clipboard.writeText(results.map(block).join("\n\n")).then(()=>alert("Tercopy semua."));
-  $("csv").onclick=()=>{
-    const rows=[["address","platforms","functions","lp_v3","lp_v4","lp_clanker","bankr_token","bankr_claimable","source","verdict"]];
-    results.forEach(r=>{
-      const bt=r.bankr&&r.bankr.tokens.length?r.bankr.tokens.map(t=>t.sym).join("|"):"";
-      const bc=r.bankr&&r.bankr.tokens.length?r.bankr.tokens.map(t=>((t.claim&&t.claim.token0)||"0")+"WETH;"+((t.claim&&t.claim.token1)||"0")).join("|"):"";
-      rows.push([r.addr,r.platforms.join("|"),r.funcs.join("|"),(r.lp&&r.lp.v3)||0,(r.lp&&r.lp.v4)||0,(r.lp&&r.lp.clanker)||0,bt,bc,r.source,hasSignal(r)?"ADA":"tidak"]);
+/* ---------- render ---------- */
+function hasSig(r){
+  const v3cash=r.v3&&r.v3.tokens&&r.v3.tokens.some(t=>t.mine&&t.claimEth>0.0000005);
+  return (r.platforms&&r.platforms.length>0)||(r.lp&&(r.lp.v3>0||r.lp.v4>0||r.lp.clanker>0))||(r.bankr&&r.bankr.tokens.length)||v3cash;
+}
+function ethOf(r){let s=0; if(r.v3&&r.v3.tokens)r.v3.tokens.forEach(t=>{if(t.mine&&t.claimEth)s+=t.claimEth;});
+  if(r.bankr&&r.bankr.tokens)r.bankr.tokens.forEach(t=>{s+=(Number(t.claim&&t.claim.token0)||0)});return s;}
+function block(r){
+  const L=[];
+  L.push("WALLET  "+r.addr);
+  L.push("platform : "+((r.platforms&&r.platforms.length)?r.platforms.join(", "):"—"));
+  L.push("fungsi   : "+((r.funcs&&r.funcs.length)?r.funcs.join(", "):"—"));
+  L.push("LP NFT   : V3="+((r.lp&&r.lp.v3)||0)+"  V4="+((r.lp&&r.lp.v4)||0)+"  Clanker="+((r.lp&&r.lp.clanker)||0));
+  if(r.v3&&r.v3.found){
+    L.push("apeV3    : "+r.v3.deploys+" deployToken terdeteksi, "+r.v3.tokens.length+" token terbaca");
+    r.v3.tokens.forEach(t=>{
+      const tag=t.mine?"⭐ LIQUIDITY OWNER ANDA":"(owner: "+t.owner.slice(0,10)+"…)";
+      if(t.unclaimed){
+        L.push("  • "+t.unclaimed.sym0+" | LP NFT #"+t.lpId+" | "+tag);
+        L.push("      fee belum diklaim: "+(Number(t.unclaimed.f0)/10**t.unclaimed.d0).toLocaleString("en-US",{maximumFractionDigits:6})+" "+t.unclaimed.sym0
+              +" + "+(Number(t.unclaimed.f1)/10**t.unclaimed.d1).toFixed(10)+" "+t.unclaimed.sym1);
+        L.push("      ≈ "+(t.claimEth||0).toFixed(8)+" ETH  (~$"+((t.claimEth||0)*3200).toFixed(2)+")  [bagian LP cut 50%]");
+        L.push("      KLAIM: collectFees("+t.token+") di kontrak "+V3C);
+      } else L.push("  • "+t.token+" "+tag);
     });
-    const csv=rows.map(r=>r.map(x=>'"'+String(x).replace(/"/g,'""')+'"').join(",")).join("\n");
-    const a=document.createElement("a");
-    a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));
-    a.download="launchpad-scan.csv"; document.body.appendChild(a); a.click(); a.remove();
-  };
+  } else L.push("apeV3    : —");
+  if(r.bankr&&r.bankr.tokens.length)r.bankr.tokens.forEach(t=>L.push("Bankr    : "+t.sym+" — "+((t.claim&&t.claim.token0)||0)+" WETH + "+((t.claim&&t.claim.token1)||0)+" "+t.sym));
+  else L.push("Bankr    : —");
+  L.push("sumber   : "+r.source);
+  L.push("verdict  : "+(hasSig(r)?"ADA SINYAL":"tidak ada"));
+  return L.join("\n");
+}
+function render(){
+  const onlyS=$("onlySig").checked, onlyV=$("onlyV3").checked;
+  const rows=results.filter(r=>(!onlyS||hasSig(r))&&(!onlyV||(r.v3&&r.v3.tokens&&r.v3.tokens.some(t=>t.mine))));
+  $("outCard").style.display="block";
+  const sig=results.filter(hasSig).length, cash=results.filter(r=>r.v3&&r.v3.tokens&&r.v3.tokens.some(t=>t.mine)).length;
+  $("summary").innerHTML=`total <b>${results.length}</b> · ada sinyal <b>${sig}</b> · punya fee V3 <b>${cash}</b> · tampil <b>${rows.length}</b>`;
+  $("list").innerHTML=rows.map(r=>{const i=results.indexOf(r);
+    return '<div class="wblock"><div class="whead" style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap">'+
+      '<span class="waddr">'+r.addr+'</span>'+
+      (r.v3&&r.v3.tokens&&r.v3.tokens.some(t=>t.mine)?'<span class="badge b-cash">PUNYA FEE V3</span> ':"")+
+      (hasSig(r)?'<span class="badge b-ok">ADA SINYAL</span>':'<span class="badge b-mut">tidak ada</span>')+'</div>'+
+      '<pre class="body">'+block(r).replace(/[<>&]/g,c=>({"<":"&lt;",">":"&gt;","&":"&amp;"}[c]))+'</pre>'+
+      '<div class="actions"><button class="btn btn-ok mini" data-copy="'+i+'">Copy</button></div></div>';}).join("");
+}
+function parseAddrs(){return [...new Set(($("addrs").value||"").split(/[\s,;]+/).map(s=>s.trim().toLowerCase()).filter(s=>/^0x[0-9a-f]{40}$/.test(s)))];}
 
-  setStatus("siap. isi Alchemy key (disarankan) lalu paste alamat.","b-ok");
-});
+/* ---------- run ---------- */
+async function runFull(){
+  const addrs=parseAddrs(); if(!addrs.length)return alert("Belum ada alamat valid.");
+  stopped=false; results=[]; $("list").innerHTML="";
+  $("scan").disabled=$("scanV3").disabled=true; $("stopBtn").disabled=false;
+  const force=$("force").checked, prog=$("prog"); prog.value=0; prog.max=addrs.length; prog.style.display="block";
+  for(let i=0;i<addrs.length;i++){
+    if(stopped){setS("dihentikan.");break;}
+    const a=addrs[i];
+    let r=(!force&&cache[a]&&cache[a].addr)?cache[a]:await scanOne(a);
+    if(!force)cache[a]={...r,_v3hashes:r._v3hashes};
+    results.push(r); prog.value=i+1;
+    setS(`${i+1}/${addrs.length} · sumber ${r.source}`); if(i%8===0)render();
+    await sleep(parseInt($("delay").value||"160",10));
+  }
+  setS("fase 2: LP NFT…"); await lpBatch(results);
+  setS("fase 3: Bankr…");
+  for(let i=0;i<results.length;i++){if(stopped)break;await bankrCheck(results[i]);if(i%10===0)render();await sleep(60);}
+  setS("fase 4: ape.store V3 (hitung fee…)");
+  for(let i=0;i<results.length;i++){if(stopped)break;
+    if(force||!results[i].v3)await v3Check(results[i]);
+    results[i]._v3hashes=undefined; cache[results[i].addr]={...results[i]};
+    if(i%5===0){render();prog.value=addrs.length;}
+    setS(`fase 4: ${i+1}/${results.length} ape.store V3`);}
+  saveCache(); render(); $("scan").disabled=$("scanV3").disabled=false; $("stopBtn").disabled=true;
+  setS("selesai.");
+}
+async function runV3only(){
+  const addrs=parseAddrs(); if(!addrs.length)return alert("Belum ada alamat valid.");
+  stopped=false; results=$("onlyV3").checked?results:[]; 
+  $("scan").disabled=$("scanV3").disabled=true; $("stopBtn").disabled=false;
+  const prog=$("prog"); prog.value=0; prog.max=addrs.length; prog.style.display="block";
+  for(let i=0;i<addrs.length;i++){
+    if(stopped)break;
+    const a=addrs[i]; let r=results.find(x=>x.addr===a);
+    if(!r){ r=await scanOne(a); results.push(r); }
+    setS(`V3 ${i+1}/${addrs.length} · cari deployToken…`);
+    await v3Check(r); r._v3hashes=undefined;
+    prog.value=i+1; render();
+    setS(`V3 ${i+1}/${addrs.length} · ${r.v3.tokens.length} token`);
+  }
+  $("scan").disabled=$("scanV3").disabled=false; $("stopBtn").disabled=true; setS("selesai (V3).");
+}
+$("scan").onclick=runFull; $("scanV3").onclick=runV3only;
+$("stopBtn").onclick=()=>{stopped=true;};
+$("onlySig").onchange=render; $("onlyV3").onchange=render;
+$("clearCache").onclick=()=>{if(confirm("Hapus cache?")){Object.keys(cache).forEach(k=>delete cache[k]);saveCache();setS("cache dihapus.");}};
+$("clearAll").onclick=()=>{$("addrs").value="";results=[];$("outCard").style.display="none";setS("dibersihkan.");};
+$("file").addEventListener("change",e=>{const f=e.target.files[0];if(!f)return;const fr=new FileReader();
+  fr.onload=()=>{$("addrs").value=String(fr.result||"").trim();};fr.readAsText(f);});
+$("list").addEventListener("click",e=>{const b=e.target.closest("[data-copy]");if(!b)return;
+  const r=results[Number(b.getAttribute("data-copy"))];
+  navigator.clipboard.writeText(block(r)).then(()=>{const o=b.textContent;b.textContent="Tercopy ✓";setTimeout(()=>b.textContent=o,1200);});});
+$("copySig").onclick=()=>{const t=results.filter(hasSig).map(block).join("\n\n");
+  if(!t)return alert("Tidak ada sinyal.");navigator.clipboard.writeText(t).then(()=>alert("Tercopy "+results.filter(hasSig).length+" wallet."));};
+$("copyAll").onclick=()=>navigator.clipboard.writeText(results.map(block).join("\n\n")).then(()=>alert("Tercopy semua."));
+$("csv").onclick=()=>{
+  const rows=[["address","platforms","functions","lp_v3","lp_v4","lp_clanker","apev3_deploys","apev3_mytokens","apev3_claim_eth","bankr_token","source","verdict"]];
+  results.forEach(r=>{
+    const mine=(r.v3&&r.v3.tokens)?r.v3.tokens.filter(t=>t.mine):[];
+    rows.push([r.addr,(r.platforms||[]).join("|"),(r.funcs||[]).join("|"),(r.lp&&r.lp.v3)||0,(r.lp&&r.lp.v4)||0,(r.lp&&r.lp.clanker)||0,
+      (r.v3&&r.v3.deploys)||0,mine.map(t=>t.unclaimed?t.unclaimed.sym0:t.token).join("|"),mine.reduce((s,t)=>s+(t.claimEth||0),0).toFixed(10),
+      r.bankr&&r.bankr.tokens?r.bankr.tokens.map(t=>t.sym).join("|"):"",r.source,hasSig(r)?"ADA":"tidak"]);
+  });
+  const csv=rows.map(r=>r.map(x=>'"'+String(x).replace(/"/g,'""')+'"').join(",")).join("\n");
+  const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));
+  a.download="launchpad-scan-v2.csv";document.body.appendChild(a);a.click();a.remove();};
+setS("siap. Isi Alchemy key, paste alamat, klik Scan.");
+})();
 </script>
 </body>
 </html>
